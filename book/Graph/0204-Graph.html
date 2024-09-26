@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Agile Graph Building</h2><p class="todo">TODO: introduce <code>useInLayout</code></p>
+<p>Graph, composed of nodes and edges, is one of the most popular visual representations for software dependencies.
+Advantages to represent dependencies as a graph are multiple. First, graphs are structures that are both intuitive and scalable. Second, graph modeling is well understood with a strong mathematical background. Numerous algorithms are available to carry out a wide range of analysis.</p>
+<p>The importance of defining and manipulating graphs has lead to a profusion of languages to describe and specify graphs. However, it appears that most of these languages are unfit to cope with the large range of properties software components have to be visually associated with. Consider <em>Graphviz</em>, a popular software to visualize graphsfootnote{url{http://www.graphviz.org}}. Graphs are described in Graphviz using <em>Dot</em>, a domain-specific language that offers sophisticated constructions to define nodes, their connections and complex layouts. Consider the following example, an except from the official manual of Dot to represent a control flow (<code>http://www.graphviz.org/pdf/dotguide.pdf</code>):</p>
+<p><figure><pre><code class="smalltalk">digraph G {
+      node [shape=box,style=filled,color=&quot;.5 .5 .5&quot;];
+      main -&gt; execute;
+      node [shape=box,style=filled,color=&quot;.2 .2 .2&quot;];
+      main -&gt; init;
+      node [shape=box,style=filled,color=&quot;.3 .3 .3&quot;];
+      main -&gt; cleanup;
+}</code></pre><figcaption></figcaption></figure></p>
+<p>Each function is represented with a colored box. The shape of a node may be explicitly defined, as illustrated above, in case it has to be shaded using a particular color. Dot suffers from a gap between <em>what</em> is represented and <em>how</em> it is represented. The connection between the graph (<em>i.e.,</em> the produced visualization) and the represented code (<em>i.e.,</em> the method <code>main</code>, <code>execute</code>) is not explicit in the Dot program: the code given above <em>draws lines between colored labeled nodes</em> whereas a practitioner wishes to visualize <em>dependencies and metrics between methods</em>. This gap has several serious consequences, including (i) verbose script containing duplicated code and (ii) jumping in both directions from the visualization to the code is costly in terms of manual human actions.
+Not properly addressing the gap between the visualization and the code inevitably leads to long and repetitive program description.</p>
+<p>We propose <em>Graph</em>, a domain specific language to visualize software dependencies as a graph. Produced visualizations aim to assist software (re)engineers to carry out maintenance or comprehension analysis.</p>
+<p>The key difference between <em>Graph</em> and traditional graph-description languages is the relation between visual elements and dimensions and the application to visualize. To visualize a software with Dot, one has to define a box with a label and numerical values to define its size and color. With <em>Graph</em>, one has to associate colors and size to software metrics and provide classes and methods as input. As a result, scripts written with <em>Graph</em> are short, concise and efficient.</p>
+<h3>1.  Examples of Graph usage</h3><p>As a running example to exhibit the characteristics of Graph, we use the code of Roassal itself.
+The visualization identifies dependencies toward Trachel, a low-level vectorial engine which is a subcomponent of Roassal. 
+Roassal is composed of over 200 classes to implement shapes, layout, and many other things. </p>
+<p><a name="dependencies"></a><figure><img src="figures/dependencies.png" width="80%"></img><figcaption>1.1. Visualization of a software system</figcaption></figure></p>
+<p>Figure <a href="#dependencies">1.1</a> is a visualization of the Roassal application source code. This visualization shows the dependencies between classes as mapped on the class hierarchy. This visualization exhibits two typical requirements. First, it shows how more than one kind of relationships need to be visualized while still presenting an understandable structure. Second, it shows how to distinguish between structural relevant parts based on some heuristic (in this case, coloring nodes based on a convention).</p>
+<p>Each circle is a class. The size of the class indicates the number of methods defined in the class. Gray lines indicate inheritance links. Colors indicate main components of Roassal: purple indicates Trachel, a low-level vectorial engine; green indicates visual shapes; yellow indicates graph layout algorithms. Classes that belong to other components are gray.</p>
+<p>Blue lines indicate dependencies between Roassal's classes toward Trachel. Lines follow the class hierarchy, in which each control point is a superclass. Following a relevant hierarchical structure is effective at reducing edge cluttering.
+Edges have a transparency ratio of 0.2 to indicate dependency accumulation.</p>
+<p>Figure <a href="#dependencies">1.1</a> is produced by the following code:</p>
+<p><figure><pre><code class="smalltalk">	b := RTGraphBuilder new.
+	b nodes if: [ :c | c inheritsFrom: RTShape ]; color: Color green.
+	b nodes if: [ :c | c inheritsFrom: RTLayout ]; color: Color yellow.
+	b nodes if: [ :c | 'TR*' match: c name ]; color: Color purple.
+	b nodes color: Color gray.
+	
+	b edges
+		connectTo: #subclasses;
+		useInLayout.
+	
+	b edges
+		connectTo: #dependentClasses;
+		follow: #superclass;
+		if: [:from :to | ('RT*' match: from name) and: ['TR*' match: to name]];
+		color: (Color blue alpha: 0.2).
+	
+	b layout cluster.
+
+	b global normalizeSize: #numberOfMethods min: 5 max: 60.
+	
+	b addAll: RTObject withAllSubclasses.	
+	b addAll: TRObject withAllSubclasses.
+	b addAll: TREvent withAllSubclasses.
+	b build</code></pre><figcaption></figcaption></figure></p>
+<p>Line 1 creates an instance of the class <code>RTGraphBuilder</code> and assigns it to the variable <code>b</code>. 
+Line 2 is a node declaration to fill in the classes in green that inherit from the class <code>RTShape</code>. 
+Line 3 colors all subclasses of a layout class in yellow.
+Line 4 colors all Trachel purple. A Trachel class begins with the two character <code>TR</code>.
+Line 5 defines the default color for nodes not previously matched. 
+Lines 7-9 define a group of edges representing the superclass relation between classes. These edges are used for the layout, specified later on Line 17.
+Lines 11 - 15 visualize dependencies starting from Roassal (<em>i.e.,</em> classes with a name beginning with <code>RT</code>) and to Trachel. Edges follow the superclass relation between classes (Line 13).
+Line 19 defines a global production rule: each class has a size representing its number of methods. The class with the lowest number of methods is 5 pixels wide. The largest class is 60 pixels wide.
+Lines 21-23 feed the program with the classes to analyze.
+Line 24 renders the visualization.</p>
+<h3>2.  Program Structure</h3>
+<p>This section describes and illustrates the domain-specific language (DSL) offered by <em>Graph</em>. A program <em>P</em> is composed of 5 distinct parts: <em>P = N E L G I</em>. Where <em>N</em> = node production rules, <em>E</em> = edges production rules, <em>L</em> = layout rules, <em>G</em> = global rules, <em>I</em> = input. The interpretation of the program occurs at each elementary feed using the keyword <code>addAll:</code>.</p>
+<p>The input corresponds to a model of a software system to be visualized. <em>Graph</em> is not tied to a particular code model: this papers uses the Pharo code model and we regularly use <em>Graph</em> with FAMIX models. A code model typically describes (i) software structural entities, such as packages, classes, and methods, (ii) software metrics, and (iii) navigation functions. This papers uses the <code>numberOfMethods</code> metric and the <code>dependentClasses</code> and <code>superclass</code> navigation functions.</p>
+<p>Each part of a program may be composed of zero, one or more <em>production rules</em>. In our example, the node part is composed of four production rules and the edge part composed of two production rules. A rule assigns a visual attribute to a semantically related group of elements. For examples, all classes inheriting from <code>RTShape</code> are in green. Each rule may be accompanied with a condition that scopes the effect of the production rule.</p>
+
+<h4>2.1.  Nodes</h4>
+<p>A node represents a software element that represents a particular entity of the software system. Most of the time a node represents a structural element of the analyzed software, a package, a class, or a method. <em>Graph</em> supports alternative code models, which is key to have a reusable DSL.</p>
+<p>Nodes are defined using the keyword <code>nodes</code>. A number of keywords may be employed to define the visual representation of a node and  interactive actions the user may trigger. Two shapes are available <code>rectangle</code> and <code>ellipse</code>. <code>Color</code>, <code>size</code>, <code>height</code> and <code>width</code> may be set. Each node may be <code>labeled</code>.</p>
+<h5>2.1.1.  Visual shape</h5><p>Shapes for nodes and edges reflect properties and metric values. A node is typically shaped as a rectangle or a circle. Edges are typically straight lines, bezier curves possibly arrowed. 
+Instead of providing direct numerical values to boxes and lines, <em>Graph</em> allows metric functions to be used in place of numerical values. Metrics are then computed against elements between the software entity represented by the node or the edge.</p>
+<p>Each node is associated with a model element given as input of the program. Visual parameters of a node may reflect numerical value or metrics computed on the model element. </p>
+
+<h5>2.1.2.  Scoping</h5><p>Being able to carefully select nodes and edges that matter for a particular software analysis task is crucial. Scalability of the visualization, especially when dealing with software dependencies, is a major obstacle. Being able to precisely define the scope of an analysis is crucial. </p>
+<p>The scope of node production rule may be set using the <code>if:</code> keyword. This keyword takes a block function as argument to indicate whether or not the model element has to be considered by the production rule.
+In the example given at the beginning of the chapter, each colored node has a particular scope, subclasses of <code>RTShape</code> or <code>RTLayout</code>, or classes named after <code>TR*</code>.</p>
+
+<h4>2.2.  Edges</h4><p>An edge represents a directed relationship between two nodes, typically representing a dependency between two software entities. Dependencies in an object-oriented language may be diverse. For example, a class $B$ may depend on another class $A$ by being a subclass, using $A$'s methods, or simply having duplicated source code duplication. </p>
+<p>The <code>edges</code> production rule links nodes to each other. A proper visual aspect of an edge is driven by many different parameters. This section describes the linguistic constructs for edges.</p>
+<h5>2.2.1.  Connecting</h5><p>The two edge extremities are specified using the <code>connectFrom:</code> and <code>connectTo:</code> keywords. For each element, the starting point of an edge is given by <code>connectFrom:</code> and the ending point by <code>connectTo:</code>. These two keywords accepts a function as argument that returns some software entities.</p>
+<p><figure><pre><code class="smalltalk">b := RTGraphBuilder new.
+b nodes color: Color gray.
+b edges 
+	connectFrom: #superclass;
+	useInLayout.
+b layout tree.
+b addAll: (RTShape withAllSubclasses).
+b build</code></pre><figcaption></figcaption></figure></p>
+<p>In the example above, nodes are classes, subclasses of <code>RTShape</code>. Each node is connected to its superclass. The expression <code>[:cls | cls superclass]</code> is applied to each node, which designates the superclass node. The example shows the shorthand <code>superclass</code>.
+Note that the instruction <code>connectFrom: #superclass</code>, which connects each class to its superclass, has the same visual effect as <code>connectTo: #subclasses</code>, which connects each class to its subclasses. </p>
+<h5>2.2.2. Directed line</h5><p>The direction of an edge is typically indicated with an arrow. Dedicated keywords are available for classical direction indicator (<code>diamond</code>, <code>arrow</code>, <code>arrowHead</code>). In addition, our DSL offers the possibility to have curved lines to indicate edge orientation. The following example indicates dependencies between shapes of Roassal:</p>
+<p><a name="directedLineWithLegend"></a><figure><img src="figures/directedLineWithLegend.png" width="60%"></img><figcaption>2.1. Directed line</figcaption></figure></p>
+<p><figure><pre><code class="smalltalk">b := RTGraphBuilder new.
+b nodes color: Color gray.
+b edges directed; connectTo: #dependentClasses; useInLayout.
+b global
+	normalizeSize: #numberOfMethods min: 5 max: 40 using: #ln.
+b layout horizontal.
+b addAll: (RTShape withAllSubclasses).
+b build</code></pre><figcaption></figcaption></figure></p>
+<p>Classes are in gray and horizontally lined up. The size of each class indicates its number of methods. 
+A line indicates dependencies between classes. The keyword <code>dependentClasses</code>, when sent to a class <em>c</em> returns the list of classes <em>c_i</em> that depend on <em>c</em> (<em>e.g.,</em> <em>c_i</em> may be a subclass of <em>c</em>, at least one of <em>c_i</em>s method reference to $c$).
+The lines indicates that many classes depend on the right-most class.</p>
+<h5>2.2.3.  Follow</h5><p>Lines may follow a path of controlling elements to form a bundle. The <code>follow:</code> keywords specify the path for both the starting and ending points. Assuming the following:</p><ul><li> <em>e_s</em> and <em>e_e</em> are the starting and ending elements, respectively</li><li> <em>f</em> the function provided to the <code>follow:</code> keyword</li></ul>
+
+<p>The control elements are formed up to the common ancestor element (if any) from the starting and ending point. Consider the following example:</p>
+<p><figure><pre><code class="smalltalk">b := RTGraphBuilder new.
+b nodes if: [ :c | '*Line*' match: c name ]; color: Color red.
+b nodes color: Color gray.
+
+b edges 
+	follow: #superclass;
+	connectTo: #dependentClasses;
+	color: (Color blue alpha: 0.2).
+
+b edges connectFrom: #superclass; useInLayout.
+b layout tree.
+b addAll: TRShape withAllSubclasses, RTShape withAllSubclasses.
+b build.</code></pre><figcaption></figcaption></figure>
+<a name="follow"></a><figure><img src="figures/follow.png" width="70%"></img><figcaption>2.2. Bezier following a given path</figcaption></figure></p>
+<p>Figure <a href="#follow">2.2</a> shows two class hierarchies, Trachel and Roassal. A superclass is above its subclasses, and inheritance is indicated with gray lines. A class is colored in red if it contains the word &quot;Line&quot; in its name. Blue lines indicate dependencies and follow the class inheritance links. </p>
+
+<h4>2.3.  Layout</h4><p>Nodes have to be properly spatially located to communicate a particular situation.
+A large number of layouts exists, for which some of them are driven by edges.</p>
+<p><em>Graph</em> supports a number of well-known layouts (<code>force</code>, <code>flow</code>, <code>circle</code>, <code>grid</code>, <code>cluster</code>, <code>vertical</code>, <code>horizontal</code>, <code>tree</code>, <code>sugiyama</code>, <code>translateBy:</code>, <code>pushAway:</code>). 
+However, it often happens that complex visualizations require more than a &quot;simple&quot; layout to visualize graphs. It has been shown that implementing a complex layout is a difficult programming activity. The <code>layout</code> production rule partially addresses this problem by featuring two properties: </p>
+<ul><li> <em>Partitioning</em> : A particular layout may be applied to a graph subset. Partitioning is useful when the graph is too large to be efficiently laid out or when the graph is composed of semantically distinct clusters.</li><li> <em>Composition</em> : A succession of layouts may be applied to achieve a particular space distribution.</li></ul>
+<p><a name="partitions2"></a><figure><img src="figures/partitions2.png" width="90%"></img><figcaption>2.3. Visualization of a software system</figcaption></figure></p>
+<p>The following example illustrates the graph partitioning and layout composition mechanisms:</p>
+<p><figure><pre><code class="smalltalk">b := RTGraphBuilder new.
+b nodes 
+	color: Color gray;
+	if: [ :c | c inheritsFrom: RTShape ] color: Color blue;
+	if: [ :c | c name endsWith: 'Builder' ] color: Color red.
+b edges
+	connectTo: #dependentClasses;
+	color: (Color gray alpha: 0.1);
+	if: [ :f :t | f inheritsFrom: RTLayout ] color: (Color green alpha: 0.2).
+		
+b layout
+	partition: [ :c | c inheritsFrom: RTLayout ];
+	partition: [ :c | c inheritsFrom: RTShape ];
+	partition: [ :c | c inheritsFrom: RTInteraction ];
+	partition: [ :c | c inheritsFrom: RTBuilder ];
+	partition: [ :c | '*Example*' match: c name ];
+	force.
+
+b layout circle radius: 250.
+
+b global 
+	alphaColor: 0.4;
+	normalizeSize: [ :c | c dependentClasses size ] min: 5 max: 30 using: #sqrt.
+b addAll: (RTObject withAllSubclasses).
+b build</code></pre><figcaption></figcaption></figure></p>
+<p>The script contains two layout rules. The first layout rule partitions nodes of the graph into 5 semantically different sets. Classes not matching any <code>partition:</code> instruction are all located at the same point, center of the visualization. A <code>force</code>-based layout is applied on each defined partition. The second layout rule uses a circle layout to locate the partitions.</p>
+<p>Result of the script is given in Figure <a href="#partitions2">2.3</a>. Each circle is a class and its size reflects the amount of methods defined in the class. Shape classes are blue and builder classes are red. Edges starting from a layout class are in green. </p>
+
+<h4>2.4.  Gloabl rules</h4><p>Global rules may be set to either avoid code duplications between production rules or to perform color or size normalization.</p>
+<h5>2.4.1.  Global rule</h5><p>Size and colors of nodes may be globally set:
+<code>alphaColor:</code> set transparency of all nodes and expect a value between 0.0 and 1.0; <code>minSize:</code> and <code>maxSize:</code> set the minimum and maximum node pixel size, respectively. This is relevant in the case that elements are extraordinary small or large, as it often happens with software metrics.</p>
+<p>Algorithms may be globally applied, for example: <code>colorCycles</code> and <code>colorBranches</code> color nodes that are in cycles and accessible from a particular branch, respectively. This is useful to understand the ramification of depending elements.</p>
+<h5>2.4.2.  Normalization</h5><p>Nodes may be compared to each other by their shape and color. The ct{global} rule provides two composed keywords:</p><ul><li> <code>normalizeSize: metricBlock min: minValue max: maxValue using: transformation</code> normalizes the size of nodes. Each node has a size ranging from <code>minValue</code> to <code>maxValue</code>. The size is computed using the function <code>metricBlock</code> on each object model. As it often happens, values may have to be transformed to be meaningfully compared, using the function <code>transformation</code>.</li><li> <code>normalizeColor: metricBlock using: colors using: transformation</code> assign a range of colors to nodes. The <code>colors</code> value is an array of colors, for which the the function <code>metricBlock</code> determines which colors have to be picked for a node. The first color of <code>colors</code> is assigned to the node with the lowest value of <code>metricBlock</code>. The last color in <code>colors</code> is assigned to the node with the highest value.</li></ul>
+<p><a name="coloredGraph"></a><figure><img src="figures/coloredGraph.png" width="80%"></img><figcaption>2.4. Use of normalization and force layout</figcaption></figure></p>
+<p>The argument <code>metricBlock</code> takes as argument a node and returns a numerical value. It is known that software system often follow power laws}. As a consequence, metric values often have to be projected to better exhibit differences.
+The <code>transformation</code> field is a simple transformation function. Typically a logarithm or square root. Illustrated. Figure <a href="#coloredGraph">2.4</a> is the result of:</p>
+<p><figure><pre><code class="smalltalk">b := RTGraphBuilder new.
+b edges connectTo: #dependentClasses; useInLayout.
+b layout force charge: -80.	
+
+b global
+	minSize: 15;
+	normalizeSize: [ :c | c dependentClasses size ]
+		min: 5 max: 25 using: #log;
+	normalizeColor: [ :c | c dependentClasses size ] 
+		using: { Color green . Color  red } using: #log;
+	alphaColor: 0.4.
+
+b addAll: RTObject withAllSubclasses, TRObject withAllSubclasses.
+b build</code></pre><figcaption></figcaption></figure></p>
+<p>The size and color of a class indicates its amount of dependent classes. The class with the smallest number of dependencies is green and 5-pixels wide. The class with the most dependencies is red and 25-pixels wide. Other classes have their metric value projected with the logarithm function.</p>
+
+<h3>3.  Chapter summary</h3><p><em>Graph</em> is a specialized language to render graphs. One of the key aspects of <em>Graph</em> is to provide a small and consistent language to seamlessly map software code into a partitioned graph. Such features is non-trivial to obtain when considering other domain-specific languages.</p>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

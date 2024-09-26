@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      
+<h2> OpenStreetMap Integration</h2>
+<p class="note">The integration of OpenStreetMap in Roassal has been contributed by Onil Goubier and Thierry Goubier. The GoogleMaps API has been written by Sergio Maass. Both these contributes are under the MIT License.</p>
+<p>OpenStreetMap is a collaborative project to create maps (<a href="http://openstreetmap.org">http://openstreetmap.org</a>) which offers a nice API to access and download map tiles. </p>
+<p>The class <code>RTOSM</code> stands fos OpenStreetMap and is a shape that download and render tiles. Consider the following example:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	map := RTOSM new.
+	e := map element.
+	v add: e.
+	v @ RTDraggableView.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="osmSimpleExample"></a><figure><img src="figures/osmSimpleExample.png" width="100%"></img><figcaption>0.1. Simple example of using RTOSM</figcaption></figure></p>
+<p>Figure <a href="#osmSimpleExample">0.1</a> is obtained by simply creating an element from the shape <code>RTOSM</code> and adding it to a view. The map can be scrolled (thanks to <code>v @ RTDraggableView</code>). The Pharo inspector offers zooming in and out. </p>
+<h3>1.  Moving the camera to particular locations</h3>
+<p>The camera represents the location the user will see the roassal output, and is located at the center of the window that renders the scene. The camera could be located to any particular geographical location. Consider the following:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	map := RTOSM new.
+	e := map element.
+
+	v add: e.
+
+	paris := 48.8567 @ 2.3508.
+	
+	v @ RTDraggableView.
+	
+	v canvas camera translateTo: (map latLonToRoassal: paris).
+	v canvas camera noInitializationWhenOpen.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="osmParis"></a><figure><img src="figures/osmParis.png" width="100%"></img><figcaption>1.1. Pointing the camera to Paris</figcaption></figure></p>
+<p>The variable <code>paris</code> contains a point <code>latitude @ longitude</code>. These coordinate are easily obtained by googling for it (<em>e.g.,</em> <code>paris latitude and longitude location</code> is good enough).</p>
+<p>Consider the following variation (Figure <a href="#osmMenu">1.2</a>):
+<figure><pre><code class="smalltalk">	v := RTView new.
+	map := RTOSM new.
+	e := map element.
+
+	v add: e.
+
+	v @ RTDraggableView.
+
+	movingCamera := [ :locationLatLong |
+		v canvas camera translateTo: 
+			(map latLonToRoassal: locationLatLong). 
+		v signalUpdate ].
+
+	&quot;Adding a menu&quot;
+	mb := RTMenuBuilder new.
+	mb view: v.
+	mb menu: 'Paris' callback: [ movingCamera value: 48.8567 @ 2.3508 ].
+	mb menu: 'London' callback: [ movingCamera value: 51.50722 @ -0.12750 ].
+	mb menu: 'NewYork' callback: [ movingCamera value: 40.7127 @ -74.0059 ].
+	mb build.
+
+	v</code></pre><figcaption></figcaption></figure>
+<a name="osmMenu"></a><figure><img src="figures/osmMenu.png" width="100%"></img><figcaption>1.2. Adding a menu with locations</figcaption></figure></p>
+<p>The script above defines the block called <code>movingCamera</code> which takes as argument a geographical location. The blocks moves the camera accordingly and signal a refresh.
+A menu is then defined to let the user click on each city name to move the camera.</p>
+<h3>2.  Decorating the map</h3>
+<p>Roassal elements may be added to a view, on top a map. The method <code>RTOSM&gt;&gt;latLonToRoassal:</code> is used to translate geographical coordinates into Roassal space. Consider the following example that shows seisms on Earth (Figure <a href="#osmSeisms">2.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	csv := (ZnEasy get: 'http://earthquake.usgs.gov/earthquakes/feed/v0.1/summary/2.5_month.csv') contents.
+	tab := RTTabTable new
+		input: csv
+		usingDelimiter: $,.
+	tab removeFirstRow.
+	tab replaceEmptyValuesWith: '0' inColumns: #(2 3 5).
+	tab convertColumnsAsFloat: #(2 3 5).
+	
+	v := RTView new.
+	map := RTOSM new.
+	e := map element.
+	v add: e.
+	tab values
+		do: [ :row | 
+			e := (RTEllipse new
+			  size: (2 raisedTo: row fifth) * 10;
+			  color: (Color red alpha: 0.3)) elementOn: row fifth.
+			e @ RTPopup @ RTHighlightable.
+			e translateTo: (map latLonToRoassal: row second @ row third).
+			v add: e ].
+
+	v canvas camera scale: 0.02; noInitializationWhenOpen.
+
+	v @ RTDraggableView.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="osmSeisms"></a><figure><img src="figures/osmSeisms.png" width="50%"></img><figcaption>2.1. Seisms on Earth</figcaption></figure></p>
+<p>The script begins by fetching data from the Earthquake Hazards Program server. The fetched CSV file has to be slightly processed to replace <code>,,</code> entries by <code>,0,</code> and convert some columns into float numbers. Column 2 of the file coorrespond to the latitude of the event; Column 3 to the longitude; Column 5 to the seism intensity.</p>
+<p>For each table row an ellipse is created with an exponential size. Each produced element has a popup and is highlightable. The ellipse is then translated to its position in the Roassal space.</p>
+<p>A scale of 0.02 is used to give an overview of the map. Thanks to the <code>noInitializationWhenOpen</code> setting the map keeps the 0.02 scale value when opened. Without this setting, the value of 1 is used.</p>
+<p>Finally, the view is made as draggable.</p>
+<h3>3.  Getting country location</h3>
+<p>It is frequent that some data are given for a particular country. Visualizing data-related country involves a translation from the country name to the geographical location. Consider the data offered by the United Nations High Commissioner for Refugees (unhcr) (UNHCR, <a href="http://popstats.unhcr.org">http://popstats.unhcr.org</a>). </p>
+<p>Here is a exceprt of a file obtained from the UNHCR server:
+<figure><pre><code class="smalltalk">	Year,Country/territory of residence,Total population
+	2013,Afghanistan,985191
+	2013,Albania,7747
+	2013,Algeria,95921
+	...</code></pre><figcaption></figcaption></figure></p>
+<p>Visually representing the number of refugies on an OpenStreetMap requires translating the word <code>Afghanistan</code> and all other country names into points as <code>latitude @ longitude</code>. Since this is a frequent need, we provide facilities for this. The expression <code>RTOSM downloadCountries at: 'result'</code> uses <code>googleapis.com</code> to extract the list of countries and their position. The expression returns a list of dictionaries. Since the result is faithfully structured as the HTTP request, extracting data is a bit cumbersome. Here is an example of getting the geolocation of Afghanistan:</p>
+<p><figure><pre><code class="smalltalk">	&quot;Better to store the result in a variable, since it is a time-expensive operation&quot;
+	result := RTOSM downloadCountries at: 'result'.
+	d := ((result detect: [ :dd | (dd at: 'name') = 'Afghanistan' ]) at: '/location/location/geolocation') first.
+	(d at: 'latitude') @ (d at: 'longitude')</code></pre><figcaption></figcaption></figure></p>
+<p>Consider the following script (Figure <a href="#osmRefugies">3.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	&quot;Data extracted from http://popstats.unhcr.org/PSQ_POC.aspx&quot;
+	countries := RTOSM downloadCountries at: 'result'.
+	tab := RTTabTable new input: RTOSM peopleForUNHCR usingDelimiter: $,.
+	4 timesRepeat: [ tab removeFirstRow ].
+	tab
+		convertColumn: 3
+		to: [ :value | 
+			value = '*'
+				ifTrue: [ 0 ]
+				ifFalse: [ value asNumber ] ].
+	v := RTView new.
+	map := RTOSM new.
+	e := map element.
+	v add: e.
+
+	&quot;We are interested in countries that have at least one refugy and we reverse-sort the countries according to the number of refugies they have. This help in case of element overlap of elements&quot;
+	interestingRows := (tab values reject: [ :row | row third &lt; 1 ]) 
+			sorted: [ :a :b | a third &gt; b third ].
+
+	interestingRows do: [ :row | 
+		&quot;Trying to get the country corresponding to the row&quot;
+		theCountry := countries 
+			detect: [ :each | '*' , (each at: 'name') , '*' match: row second ] 
+			ifNone: [ nil ].
+		theCountry ifNotNil: [ 
+			| lat lon dict |
+			dict := (theCountry at: '/location/location/geolocation') first.
+			lat := dict at: 'latitude'.
+			lon := dict at: 'longitude'.
+			e := (RTEllipse new
+			 size: (row third / Float pi) sqrt * 2;
+			 color: (Color blue alpha: 0.3))
+			 elementOn:
+			  {(row second).
+			  (row third)}.
+			e @ RTPopup.
+			e translateTo: (map latLonToRoassal: lat @ lon).
+			v add: e ] ].
+
+	v @ RTDraggableView @ RTZoomableView.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="osmRefugies"></a><figure><img src="figures/osmRefugies.png" width="50%"></img><figcaption>3.1. Refugees monitored by the UNHCR</figcaption></figure></p>
+<p>The method <code>peopleForUNHCR</code> contains the data fetched from the UNHCR server. </p>
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Pharo In a Nutshell</h2>
+<p>Programming is an important skill to properly tell a computer what it has to do. This chapter gives an introduction of the Pharo programming language. Although we tried to make this chapter smooth and easy to read, having some basic programming knowledge is expected.</p>
+<p>Pharo is an object-oriented programming language, class-based, and dynamically typed. The chapter therefore begins with a brief introduction of what programming with objects is all about. The focus will subsequently moves toward Pharo.</p>
+<h3>1.  Going over an example, Step-by-step</h3>
+<p>Instead of giving a long rhetorical description about object-orientation, let us pick a simple example. The following code snippet opens a Roassal view with a label showing <code>'Hello World'</code>:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	v add: (RTLabel elementOn: 'Hello World').
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="pharoHelloWorld"></a><figure><img src="figures/pharoHelloWorld.png" width="80%"></img><figcaption>1.1. Hello World</figcaption></figure></p>
+
+<p>To execute the script given above, you need to type it in a playground, and press the green triangle (Figure <a href="#pharoHelloWorld">1.1</a>). This script displays the message <code>Hello World</code>. The word <code>RTView</code> refers to a class. A class is an object factory and its name is easily recognizable because of its first letter, which is always a capital letter. A class is like a baking pan for cakes: creating an object is like backing a cake. All the cakes produced by a pan have the same physical aspects, but attributes, such as ingredients, may vary.</p>
+<p>The first line creates an object view. An object is created using the message <code>new</code>. For example, the expression <code>RTView new</code> creates a view, <code>String new</code> creates an empty string character, <code>Color new</code> creates a black color. The view, produced by executing <code>RTView new</code>, is said to be the object (for instance) produced by <code>RTView</code>. </p>
+<p>The expression <code>object asString</code> sends the message <code>asString</code> to an object, referenced by the variable <code>object</code>. 
+In Pharo, a class is also an object, which means that objects are created by sending a message to a class. The message <code>new</code> is sent to the class <code>RTView</code>, which has the effect of creating an object. This object is assigned to the variable <code>v</code> using the operator <code>:= </code>. </p>
+<p>In the second line, the message <code>elementOn:</code> is sent to the class <code>RTLabel</code>. An argument is provided to that message, which is a string character <code>'Hello World'</code> as argument. These Roassal instructions simply creates an element that has a shape label. That element is passed as argument to the message <code>add:</code>. The effect of <code>add:</code> is simply to add the element in the view. The view, referenced by <code>v</code>, understands the message <code>add:</code> because the class <code>RTView</code> defines a method <code>add:</code>.</p>
+<p>Consider this script (Figure <a href="#pharoCicles">1.2</a>):
+<figure><pre><code class="smalltalk">	values := #(20 40 35 42 10 25).
+	v := RTView new.
+	elements := (RTEllipse new size: #yourself) elementsOn: values.
+	v addAll: elements.
+	RTHorizontalLineLayout on: elements.
+	elements @ RTLabeled.
+	v </code></pre><figcaption></figcaption></figure></p>
+<p><a name="pharoCicles"></a><figure><img src="figures/pharoCicles.png" width="30%"></img><figcaption>1.2. Circles are lined up</figcaption></figure></p>
+<p>This example renders 6 circles, each having a proper size. The expression <code>#(20 40 35 42 10 25)</code> defines an array, containing a few numbers. The expression <code>RTEllipse new size: #yourself</code> creates an object of the class <code>RTEllipse</code> by sending the message <code>new</code>. The message <code>size:</code> is sent to that ellipse object, with the symbol <code>#yourself</code> as argument. This message <code>size:</code> configures the size of the ellipses: The size of each circle is computed with the model object when creating the element. In particular, the message <code>#yourself</code> will be sent to each element of the array <code>values</code>. For example, the size of the circle representing the value 35 has a diameter of 35 pixels.
+Circles are then lined up using a dedicated layout, invoked by sending the message <code>on:</code> to it with the elements as argument. The expression <code>elements @ RTLabeled</code> labels each elements.</p>
+<p>Most visualization engines and data analysis environments operate on the principle illustrated above: scripts are typed in a workspace or a webpage, and executed to produce a visualization. This approach to build a visualization or a small application is appealing since it is self-contained: all one needs to know is within the linear script and the expressed logic is made explicit. However, this way of developing software artifacts has serious limitations. Maintenance and evolution are seriously diminished. For example, a 200-line long script is painful to modify and confusing to look at. If not properly structured, adapting a complex visualization may have the fantastic ability to consume a ridiculously large amount of time. This is a situation well known to journalists, data scientists, and also software engineers. Fortunately, a couple of decades ago the Software Engineering research community produced a way of programing that is able to cope with the inherent complexity of software artifact development. Object-oriented programming is the most successful way to handle complex and large development.</p>
+<h3>2.  Pillars of Object-oriented programming</h3><p>Object-oriented programming simplifies the programming activity. Handling objects, instead of functions or code snippets, uses a metaphor that is familiar to us, humans: an object may react upon some actions, have a behavior on its own, and may hide details about how it is physically built. </p>
+<p>Let us bring a bit of theory in all this. There are five essential ingredients to an object-oriented system:</p><ul><li> <em>Encapsulation</em>: in our daily life, we are used to handling information that is not publicly accessible: social security numbers, body weight, just to name a few. Encapsulation in object-oriented systems is about letting objects have private information. Private information may reflect detail that is not directly necessary to a service consumer. In case private information has to be publicly exposed, <em>asking a question</em> is a polite and cordial way to access it. In object-oriented programming, <em>asking a question</em> or <em>giving an order</em> is called <em>sending a message</em>. Encapsulation in object-oriented programming enables abstractions and information hiding.</li><li> <em>Composition</em>: a complex problem may be solved by cutting it down into smaller problems, hopefully easier to solve.</li><li> <em>Distribution of responsibility</em>: in our daily life, each of us has duties and responsibilities. Having a clear separation of concerns is key to having a good object-oriented design. This is what makes systems easy to understand and maintain. For example, instead of asking someone's weight in order to select what may be eaten, it is better for everybody to let that person make a responsible choice. This example is not far stretched: many difficulties in software maintenance are directly rooted from improperly assigned responsibilities in software.</li><li> <em>Message sending</em>: electronic mails are the base of our daily communication: a person, called the <em>sender</em>, sends an email to another person, called the <em>receiver</em>. In object-oriented programming, objects communicate in a similar fashion: computation is carried out by sending messages between objects. An object sends messages to other objects. After sending a message, a reply is returned. In object-orientation, sending a message is often perceived as a way to delegate responsibility.</li><li> <em>Inheritance</em>: general concepts have to be specialized to address particular requirements. Inheritance allows one to define conceptual hierarchy, reuse code, and support polymorphism. Inheritance may say that an ellipse and a square are two graphical shapes. </li></ul>
+<p>These five pillars are not particularly tied to a programming language. So, in theory, it is perfectly doable to have an object-oriented design in a procedural language such as C. However, having a programming language that enforces these principles greatly alleviates the task of the programmer.</p>
+<p>There are numerous object-oriented languages around and Pharo is one of them. Pharo differs from other languages by offering an homogeneous way of expressing computation: everything is an object, therefore computation happens by sending messages. When objects are taken seriously, there is no need for primitive types (<em>e.g.</em>, <code>int</code>, <code>float</code>), language operators, and even external compilable files! Considering only message sending significantly reduces the amount of technological details associated with the program execution that most mainstream programming languages unnecessarily expose.</p>
+
+<h3>3.  Message sending</h3><p>Sending a message is the elementary unit of computation. Understanding how to send a message is key to feel comfortable in Pharo. Consider the expression:
+<figure><pre><code class="smalltalk">'the quick brown fox jumped over the lazy dog' replaceAllRegex: 'fox' with: 'cat' </code></pre><figcaption></figcaption></figure></p>
+<p>This expression sends to the string object <code>'the quick brown fox jumped over the lazy dog'</code> a message having the name <code>#replaceAllRegex:with:</code> and two arguments, <code>'fox'</code> and <code>'cat'</code>, themselves two string objects. The result of sending this message is <code>'the quick brown cat jumped over the lazy dog'</code>, another string.</p>
+<p>In Pharo, a character string (often simply called a string) is a collection of characters written between two accents (<em>e.g.,</em> <code>'fox'</code>). A string is a plain object, which means one can send messages to it. A message is composed of two essential ingredients: a name and a collection of arguments. It may be that the set of arguments is empty. For example, the expression <code>'fox' asUppercase</code>, which evaluates to <code>'FOX'</code>, sends the message <code>#asUppercase</code> to the string <code>'fox'</code>. No arguments are involved here.</p>
+<p>Message sending is at the heart of the Pharo language, and is therefore well expressed within its syntax. There are three kinds of message sending:</p><ul><li><em>Unary message</em>: a unary message is a message that does not take any argument. The expression <code>'fox' asUppercase</code> sends a unary message to the string <code>'fox'</code>.</li><li><em>Binary message</em>: a binary message has exactly one argument and its name is not made of alphanumerical characters. Instead one or two characters are common for binary messages, such as <code>+</code>, <code>/</code>, <code>-</code>, <code>&lt;</code>, <code>&gt;&gt;</code>. The expression <code>2 + 3</code> sends to the object <code>2</code> a binary message named <code>+</code> with the argument <code>3</code>. You may notice that this expression has therefore a different semantic than <code>3 + 2</code>, although the result is obviously the same. Note that the expression <code>3 + 2 * 2</code> returns <code>10</code>, and not <code>7</code> as one may expect. If you wish to enforce mathematical priorities in arithmetic operations, use parenthesis, as in <code>3 + (2 * 2)</code>.</li><li><em>Keyword message</em>: a keyword message is a message that is neither unary nor binary. A keyword message accepts one or more object arguments. Consider the example <code>'the quick brown fox jumped over the lazy dog' includesSubstring: 'fox'</code>. This expression evaluates to <code>true</code>. The name of the keyword message is <code>#includesSubstring:</code> and the argument is <code>'fox'</code>. Each argument is preceded by a keyword. For example, the message <code>replaceAllRegex: 'fox' with: 'cat'</code> contains two keywords and therefore two arguments. Arguments are inserted within the message name.</li></ul>
+
+<p>Sending a message triggers a mechanism that searches for a method to execute. This mechanism, often called &quot;method lookup&quot;, begins from the class of the object up and goes to the superclass if not found.</p>
+<h3>4.  Object creation</h3><p>An object is a bundle of data to which messages can be sent to. An object is created most of the time by sending the <code>new</code> message to a class. This is revealing the true nature of classes, being an object factory. A class may produce as many different objects as <code>new</code> is sent to it. Objects produced from a unique class are different but understand the same set of messages and have the same variables. Differences between two or more objects issued from the same class are the the values given to these variables. For example, consider the following expression:
+<figure><pre><code class="smalltalk">	Object new == Object new</code></pre><figcaption></figcaption></figure>
+This expression sends three messages, twice the message <code>new</code> and once the message <code>==</code>, used to compare object identities. The expression evaluates to <code>false</code>, since the two objects are different, <em>i.e.,</em> located at different physical memory location.</p>
+<p>The expression <code>Point new</code> creates a point by sending the message <code>new</code> to the class <code>Point</code>. There are several ways to create a point:</p><ul><li> <code>Point new</code> creates a point <em>(0, 0)</em>. All classes in Pharo understand the message <code>new</code>. Except when explicitly prohibited, an object is created by sending <code>new</code> to the class.</li><li> <code>Point x: 5 y: 10</code> creates a point <em>(5, 10)</em>. This expression sends the message <code>x:y:</code> to the class <code>Point</code>, with <code>5</code> and <code>10</code> as arguments. The class <code>Point</code> defines the class method <code>x:y:</code>. The difference between <code>new</code> and <code>x:y:</code> is that the latter allows one to create and initialize a point with a given value for <code>x</code> and <code>y</code>.</li><li> <code>2 @ 3</code> sends to the object <code>2</code> the message named <code>@</code> with the argument <code>3</code>. The effect is the same than <code>Point x: 2 y: 3</code>, which is to create the point <em>(2, 3)</em>.</li></ul>
+<p>Each class has its way to create objects. For example, a point is not created the same way as is a color. Creating an object is also commonly mentioned as &quot;instantiating a class&quot; and an object is often referenced as &quot;instance&quot;. </p>
+<p>A class is an object factory and an object is necessarily created from a class. An object associates values to the attributes defined by the class of the object. As discussed above, objects interact by sending messages. An object is able to understand messages corresponding to methods defined in its class, and methods defined in the chain of superclasses. </p>
+<h3>5.  Class creation</h3><p>A class is a factory of objects, often regarded as an abstraction of objects. You need to create classes as soon as you wish to bundle logic and data together (<em>i.e.,</em> &quot;doing hands on work&quot;). </p>
+<p>A class belongs to a package. You may want to create a dedicated package to contain the classes you will define. A package is created by right-clicking on the package list in a system browser. We will define a class Tweet:</p><ol><li>Open a system browser from the World menu</li><li>Right click on the top left list panel, and define a package called <code>TweetsAnalysis</code>.</li><li>Create the class <code>Tweet</code>. Classes are created by filling the following template in a code browser:</li></ol><p><figure><pre><code class="smalltalk">	Object subclass: #NameOfSubclass
+		instanceVariableNames: ''
+		classVariableNames: ''
+		package: 'Announcements-Core'</code></pre><figcaption></figcaption></figure></p>
+<p>The text <code>NameOfSubclass</code> has to be replaced by the name of the class you wish to create. After the keyword <code>instanceVariableNames:</code> you need to provide the instance variables, and after <code>classVariableNames:</code> the class variables. Right click on the code and select the menu <strong>accept</strong> to effectively create the class. You should have 
+<figure><pre><code class="smalltalk">	Object subclass: #Tweet
+		instanceVariableNames: 'content sender date'
+		classVariableNames: ''
+		package: 'TweetsAnalysis'</code></pre><figcaption></figcaption></figure></p>
+<p><a name="pharoTheClassTweet"></a><figure><img src="figures/pharoTheClassTweet.png" width="80%"></img><figcaption>5.1. The class Tweet</figcaption></figure>
+You should obtain something similar to Figure <a href="#pharoTheClassTweet">5.1</a>. We have defined the class <code>Tweet</code>, contained in the package <code>TweetsAnalysis</code>. The class contains three instance variables, <code>content</code>, <code>sender</code>, and <code>date</code>. No methods have been defined so far. Note that in Pharo, an instance variable name begins with a minuscule letter.</p>
+
+<h3>6.  Method creation </h3><p>A method is an executable piece of code. A method is composed of instruction statements typically aiming to carry out a computation. We will define a small mathematical example to illustrate the creation of a method. We will therefore leave out our Twitter example for a short while. </p>
+<p>The Fibonnacci sequence is a well known sequence of numbers obtained with the formula <code>F(n) = F(n-1) + F(n-2)</code>. Terminal cases are given with <code>F(0) = 0</code> and <code>F(1) = 1</code>.</p>
+<p>We will implement the Fibonacci formula as a method defined on the class <code>Integer</code>. This class describes all the integer numbers in Pharo. First, let us open a system browser on this class. Spotter is a tool for searching in Pharo (Figure <a href="#pharoWorldMenu">6.1</a>). We will therefore search for the <code>Integer</code> class and opens a system browser on it.</p>
+<p><a name="pharoWorldMenu"></a><figure><img src="figures/pharoSpotter.png" width="90%"></img><figcaption>6.1. The World menu and Spotter</figcaption></figure></p>
+<p>Enter <code>Integer</code> in Spotter and select the corresponding class by pressing the Enter key or clicking on it using the mouse. Select the <code>arithmetic</code> protocol (third list panel) and enter the following code in the lower text pane:</p>
+<p><figure><pre><code class="smalltalk">	fibonacci
+		self &lt;= 1 ifTrue: [ ^ self ].
+		^ (self - 1) fibonacci + (self - 2) fibonacci</code></pre><figcaption></figcaption></figure></p>
+<p>After having entered the code, right click on it and select <strong>Accept</strong>. Accepting a method compiles it and makes it executable. </p>
+<p>Open a playground, type and execute <code>10 fibonacci</code>. You will see 55, its result (Figure <a href="#pharoFibonaciResult">6.2</a>).
+<a name="pharoFibonaciResult"></a><figure><img src="figures/pharoFibonaciResult.png" width="90%"></img><figcaption>6.2. Fibonacci of 10</figcaption></figure></p>
+<p>The <code>self</code> word refers to a pseudo-variable that designates the object having received the message. When executing the expression <code>10 fibonacci</code>, <code>self</code> refers to the object <code>10</code>. The expression <code>self &lt;= 1</code> is <code>true</code> if <code>self</code> is either <code>1</code> or smaller. If this is the case, then we exit the method with <code>ifTrue: [ ^ self ]</code>. The caret character (<code>^</code>) is a return statement: it exits the method and returns a value. If <code>self</code> is greater or equals <code>2</code>, then the result is the sum of <code>(self - 1) fibonacci</code> and <code>(self - 2) fibonacci</code>.</p>
+<p>Another common pseudo-variable is <code>super</code>. The two pseudo-variables <code>self</code> and <code>super</code> reference the same object, the object that has received a message. The unique difference between <code>self</code> and <code>super</code>  is characterized when when one sends a message to it, in particular:</p><ul><li> sending a message to <code>self</code> triggers the method lookup from the class of the object,</li><li> sending a message to <code>super</code> triggers the method lookup from the superclass of the class that contains the call on <code>super</code>.</li></ul>
+<p>Coming back to our Tweet example. Define the following six methods on the class <code>Tweet</code>:
+<figure><pre><code class="smalltalk">	date
+		^ date
+
+	date: aDate
+		date := aDate
+		
+	content
+		^ content
+	
+	content: aContent
+		content := aContent
+		
+	sender
+		^ sender
+	
+	sender: aSender
+		sender := aSender</code></pre><figcaption></figcaption></figure></p>
+<p>These methods will enable one to set the content of a tweet and query about it. </p>
+<p>Click on the <strong>Class</strong> button in the system browser. Clicking on it switches the system browser to the <strong>class side</strong>: methods defined on that side are class methods of the class <code>Tweet</code>. Define the method (Figure <a href="#pharoCreateFromURL">6.3</a>):
+<figure><pre><code class="smalltalk">	createFromURL: urlAsString
+		&quot;Method to be defined on the CLASS side&quot;
+		| content lines sender date |
+		content := (ZnEasy get: urlAsString) contents readStream.
+		lines := content contents lines collect: [ :l | 
+			| firstCommaIndex secondCommaIndex |
+			firstCommaIndex := l indexOf: $,.
+			secondCommaIndex := l indexOf: $, startingAt: (firstCommaIndex + 1).
+			sender := l copyFrom: 1 to: (firstCommaIndex - 1).
+			date := l copyFrom: (firstCommaIndex + 1) to: (secondCommaIndex - 1).
+			content := l copyFrom: (secondCommaIndex + 1).
+			{ sender . date . content }
+		].
+	^ lines collect: [ :line |
+			Tweet new
+				sender: line first;
+				date: line second;
+				content: line third
+		]</code></pre><figcaption></figcaption></figure></p>
+<p>The method <code>createFromURL:</code> fetches a CSV file we have prepared for that example. The file contains 1000 random tweets. It does a simple parsing of the content by identifying the comma. </p>
+<p>Next, you can define the method:
+<figure><pre><code class="smalltalk">	createFromExample
+		&quot;Method to be defined on the CLASS side&quot;
+		^ self createFromURL: 'http://bit.ly/exampleTweetCSV'</code></pre><figcaption></figcaption></figure></p>
+<p>The url <code>http://bit.ly/exampleCSV</code> is an example we have prepared to illustrate our purpose. Open it in a web browser to see what it looks like. At that stage, evaluating the expression <code>Tweet createFromExample</code> returns a list of 1000 tweet objects, each tweet describing an entry of the online CSV file. </p>
+<p><a name="pharoCreateFromURL"></a><figure><img src="figures/pharoCreateFromURL.png" width="90%"></img><figcaption>6.3. The method <code>createFromURL:</code></figcaption></figure></p>
+<p>We will define two new methods on the class Tweet. Switch to the instance side (<em>i.e.,</em> unselect the <strong>Class</strong> button in the system browser), and define the following two instance methods:</p>
+<p><figure><pre><code class="smalltalk">	words
+		^ self content substrings
+
+	isSimilarTo: aTweet
+			^ (self words intersection: aTweet words) size &gt;= 6</code></pre><figcaption></figcaption></figure></p>
+<p>The method <code>words</code> simply returns all the words defining the content of a tweet. It uses <code>substrings</code> which returns a list of words from a string. For example, the expression <code>'fox and dog' substrings</code> return <code>#('fox' 'and' 'dog')</code>. The method <code>isSimilarTo:</code> takes as argument another tweet and returns <code>true</code> or <code>false</code> whether the tweet argument is similar to the tweet that receives the message <code>isSimilarTo:</code>. The notion of similarity we use here is: two tweets are similar if they have at least 6 words in common. </p>
+<p>So, we have some objects and a way to establish a relation between them. This is more than enough to start to visualize them. Open a playground and type (Figure <a href="#pharoPositiveNegativeTweets">6.4</a>):</p>
+<p><figure><pre><code class="smalltalk">	tweets := Tweet createFromExample.
+	positive := tweets 
+		select: [ :t | #('great' 'cool' 'super' 'fantastic' 'good' 'yes' 'okay' 'ok') includesAny: t words  ].
+
+	negative := tweets 
+		select: [ :t | #('bad' 'worse' 'down' 'no') includesAny: t words  ].
+
+	b := RTMondrian new.
+	b shape circle
+		if: [ :t | positive includes: t ] color: Color blue;
+		if: [ :t | negative includes: t ] color: Color red.
+	b interaction popupText: #content.
+	b nodes: positive, negative.
+	b edges connectToAll: [ :tweet | 
+			tweets select: [ :t | t isSimilarTo: tweet ] ].
+	b layout forceWithCharge: -200.
+	b normalizer normalizeSize: [ :tweet | tweet content size ];
+		alphaColor: 0.4.
+	 
+	b</code></pre><figcaption></figcaption></figure></p>
+<p>The code given above does a very primitive classification of feeling. Tweets with a positive feeling are blue, while the negative ones are red. Among the 1000 tweets, only 60 have a feeling.
+<a name="pharoPositiveNegativeTweets"></a><figure><img src="figures/pharoPositiveNegativeTweets.png" width="90%"></img><figcaption>6.4. Positive and Negative tweets</figcaption></figure></p>
+<p>We see that only a few of the tweets have actually common words and most of them are negative.</p>
+<h3>7.  Block closure</h3>
+<p>A block closure (also simply called &quot;block&quot;) is a piece of code associated to an environment. A block is manipulable, as any object is (<em>i.e.,</em> a block may therefore be provided as message argument and be assigned to a variable). The expression <code>[ :value | value + 5 ]</code> is a block closure that takes one parameter and return the sum between that argument and <code>5</code>. This block may be evaluated with an argument using the message <code>value:</code>. Consider the following code snippet:\</p>
+<p><figure><pre><code class="smalltalk">	b := [ :value | value + 5 ].
+	b value: 10. &quot;Return 15&quot;
+	b value: -5. &quot;Return 0&quot;</code></pre><figcaption></figcaption></figure></p>
+<p>Recall the definition of the <code>fibonacci</code> method, defined on the class <code>Integer</code>:</p>
+<p><figure><pre><code class="smalltalk">	fibonacci
+		self &lt;= 1 ifTrue: [ ^ self ].
+		^ (self - 1) fibonacci + (self - 2) fibonacci</code></pre><figcaption></figcaption></figure></p>
+<p>The message <code>ifTrue:</code> takes a block <code>[ ^ self ]</code> as argument. In case that <code>self &lt;= 1</code> evaluates to true, the block is evaluated and triggers an early exit of the method. The expression <code>^ self</code> exits the method. The block uses the pseudo-variable <code>self</code>. A block may access variables defined in the outer lexical scope. A block may use temporary variables, instance variables, and argument variables.</p>
+<h3>8.  Control Structure</h3>
+<p>As illustrated in the Fibonacci example, a condition is expressed using the <code>ifTrue:ifFalse:</code> message. Obviously, it expects to have a boolean as receiver. This message takes two blocks as argument, the first one is evaluated in case the boolean receiver is <code>true</code>, or the second block is evaluated in case the receiver is <code>false</code>. Variant exists such as <code>ifTrue:</code> and <code>ifFalse:</code>. For example, <code>true ifTrue: [ 5 ]</code> evaluates to <code>5</code>. The receiver can naturally be a combination of boolean expression such as <code>(5 &lt; 1) ifFalse: [ '5 is not less than 1' ]</code>.</p>
+<h3>9.  Collection</h3>
+<p>A <code>Collection</code> is a very common data structure. As previously illustrated, the expression <code>#(23 42 51)</code> defines an array, instance of the class <code>Array</code>. This class, and its superclasses, defines a large number of methods. Two operations are very common in Pharo: transformation and filtering of collections. </p>
+<p>A transformation is typically realized using <code>collect:</code>. For example, <code>#(23 42 51) collect: [ :v | v &gt; 30 ]</code> returns <code>#(false true true)</code>. The initial array of numbers is transformed as an array of booleans. </p>
+<p>Filtering is carried out using <code>select:</code>. For example, <code>#(23 42 51) select: [ :v | v &gt; 30 ]</code> returns <code>#(42 51)</code>.</p>
+<p>Both <code>collect:</code> and <code>select:</code> takes a block as argument. In case of <code>select:</code>, the block has to evaluate to a boolean. </p>
+<p>Collections in Pharo are rooted into the Smalltalk programming language, and is often an inspiration for other programming languages. Pharo's collections are rich and expressive. We have just seen the example of <code>Array</code>. Another collection is <code>OrderedCollection</code> representing an expandable collections. Elements may be added and removed during the program execution. For example:</p>
+<p><figure><pre><code class="smalltalk">	v := OrderedCollection new.
+	v add: 23. 
+	v add: 42.
+	v add: 51.
+	elements := (RTBox new size: #yourself) elementsOn: v.
+	RTVerticalLineLayout on: elements.
+	RTView new
+		addAll: elements;
+		yourself</code></pre><figcaption></figcaption></figure></p>
+<p>This small script shows three squares.</p>
+<p>Another useful collection is <code>Dictionary</code>. A dictionary stores pairs of keys and values. For example, consider the following code snippet:
+<figure><pre><code class="smalltalk">	d := Dictionary new.
+	d at: #one put: 1.
+	d at: #two put: 2.
+	d at: #three put: 3.</code></pre><figcaption></figcaption></figure>
+The expression <code>d at: #two</code> returns the value 2.</p>
+<h3>10.  Cascade</h3>
+<p>The last bit of syntax is yet to be described. A cascade allows one to send several messages to the same object receiver. For example, instead of writing:
+<figure><pre><code class="smalltalk">	v := OrderedCollection new.
+	v add: 23. 
+	v add: 42.
+	v add: 51.</code></pre><figcaption></figcaption></figure></p>
+<p>One could write:
+<figure><pre><code class="smalltalk">	v := OrderedCollection new.
+	v 
+		add: 23; 
+		add: 42;
+		add: 51.</code></pre><figcaption></figcaption></figure></p>
+<p>The cascade, noted <code>;</code>, is a syntactic construction to make code more concise by avoiding text duplication. It is frequently used in this book.</p>
+<h3>11.  A bit of Meta-programming</h3>
+<p>Pharo provides an expressive reflective API, which means one can programmatically get data about how Pharo code is structured and defined. Consider the following expression <code>RTShape methods size</code>. This expression returns the number of methods that the class <code>RTShape</code> defines. The message <code>methods</code> is sent to the class <code>RTShape</code>, which is also an object in Pharo. This message returns a collection of the methods defined on the class <code>RTShape</code>.</p>
+<p>Many examples contained in Agile Visualization visualize software source code and therefore use the reflective API. Source code is convenient to illustrates visualization because it is already available (no need to rely on external data) and is complex enough to deserve to be visualized. </p>
+<h3>12.  Summary and Further Reading</h3>
+<p>This chapter gave a brief introduction to object-oriented programming. From now on, you should be able to understand Pharo syntax. We recommend a number of books to further discover the World of Pharo:</p><ul><li> Pharo by Example: <a href="http://pharobyexample.org">http://pharobyexample.org</a></li><li> Deep Into Pharo: <a href="http://deepintopharo.com">http://deepintopharo.com</a></li></ul>
+<p>Pharo is a beautiful, elegant, and simple language. Pharo has a small and concise syntax, which makes it each to learn. Its programming environment is also highly customizable.</p>
+<p>Building a sophisticated visualization or any non-trivial software artifact often face complex development. Mastering object-orientation is not strictly necessary in order to use Roassal. However, having a good command of object-oriented programming will considerably alleviate development and maintenance effort.</p>
+<p>Pharo offers a powerful <em>meta</em> architecture. Do you remember that an object is created by sending the message <code>new</code> to a class? In Pharo a class is also an object since we send <code>new</code> to it, as in the expression <code>Color new</code>. A class is therefore an object, itself an instance of another class, called a metaclass. And it does not stop here. A metaclass is also an object. Methods are also objects, a collection of bytecodes. Many parts of Pharo are truly beautiful, but going into more detail is out of the scope of this book.</p>
+
+
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

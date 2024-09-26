@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Visualizing Polymetric Graphs using Mondrian</h2>
+<p>Mondrian is a rich API which offers facilities to describe and render graphs. Mondrian is an essential piece of Roassal due to its expressiveness and simplicity of use. For any data structure, Mondrian allows mapping of metric values and properties into visual dimensions, such as shape and colors.</p>
+<p>Mondrian is often considered as being the most expressive part of Roassal: highly interactive and flexible visualizations may be the result of just a few lines of code. Mondrian is often the starting point of the Roassal platform.</p>
+<p>An online video illustrates this chapter: <a href="http://bit.ly/Mondrian-AgileVisualization">http://bit.ly/Mondrian-AgileVisualization</a></p>
+<h3>1.  A first visualization</h3>
+<p>As a contrived example, consider the following script (Figure <a href="#mondrianContrivied">1.1</a>):
+<figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b nodes: #('hello' 'world' 'bonjour' 'tout le monde' 'Guten' 'Morgen').
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianContrivied"></a><figure><img src="figures/mondrianContrivied.png" width="70%"></img><figcaption>1.1. A first example</figcaption></figure></p>
+<p>Six gray squares are horizontally lined up. Each square corresponds to a word contained in the array passed to <code>nodes:</code>. Several layouts are available, thanks to the layout builder (see the description of the layout builder in the Layout chapter). For example, the force layout is activated as:</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b nodes: #('hello' 'world' 'bonjour' 'tout le monde' 'Guten' 'Morgen').
+	b layout force.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p>Edges may be simply added using the edge builder, accessible by sending <code>edges</code> to the Mondrian builder:
+<figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b nodes: #('hello' 'world' 'bonjour' 'tout le monde' 'Guten' 'Morgen').
+	b shape line.
+	b edges useAssociations: { 
+		'hello' -&gt; 'world' .
+		'bonjour' -&gt; 'tout le monde' .
+		'Guten' -&gt; 'Morgen' }.
+	b layout force.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p>A label may be used instead of a grayed box and the layout may be configured as follows (Figure <a href="#mondrianContrivied02">1.2</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape label.
+	b nodes: #('hello' 'world' 'bonjour' 'tout le monde' 'Guten' 'Morgen').
+	b shape line.
+	b edges useAssociations: { 
+		'hello' -&gt; 'world' .
+		'bonjour' -&gt; 'tout le monde' .
+		'Guten' -&gt; 'Morgen' }.
+	b layout force charge: -200.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianContrivied02"></a><figure><img src="figures/mondrianContrivied02.png" width="40%"></img><figcaption>1.2. The first example revisited</figcaption></figure></p>
+
+<p>As a slightly more elaborated example, consider the following example:</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+
+	b nodes: (1 to: 300).
+	b edges connectFrom: [ :value | value // 2 ].
+
+	b shape 
+		bezierLineFollowing: [ :value | value // 2 ];
+		color: Color blue trans.
+	b edges 
+		notUseInLayout;
+		connectTo: [ :value | (value / 10) asInteger + (value \\ 10) ].
+
+	b layout cluster.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrian01"></a><figure><img src="figures/mondrianExample01.png" width="80%"></img><figcaption>1.3. Visualizing numbers and their connections</figcaption></figure></p>
+<p>The example creates an instance of the class <code>RTMondrian</code> and assigns this object to the <code>b</code> variable. Nodes are then set in the builder, which are 300 successive numbers, starting from 1. Each node is represented as a little gray square. Two sets of edges are defined. The first set, described using <code>b edges connectFrom: [ :value | value // 2 ]</code>, models the relation between a <code>value</code> and <code>value // 2</code>. The message <code>//</code> returns &quot;the integer quotient defined by division with truncation toward negative&quot; as indicated by the comment of the method <code>//</code> defined in the class <code>Number</code> (<em>e.g.,</em> <code>9//4 = 2</code>).</p>
+<p>The second set of edges, described using <code>b edges notUseInLayout; connectTo: [ ... ]</code>, is defined as the sum of the two digits. For a given numerical <code>value</code>, the expression <code>(value / 10) asInteger</code> returns the first digit or it and <code>value \ 10</code> the last digit. Each number is linked to another number representing the sum of its digits (<em>e.g.,</em> 15 is linked to 6). These edges are not taken into account for the layout as specified with the message <code>notUseInLayout</code>.</p>
+<p>The first set of edges uses the default shape for lines, which is straight, gray, and non-directed. For the second set, a shape is defined as a Bezier line following the control points given by the expression <code>value // 2</code>, painted in a translucent blue.</p>
+<p>The layout used is <code>cluster</code>, forming a radial-like appearance. For this set of elements and edges, <code>horizontalTree</code>, <code>tree</code>, <code>radial</code> are all relevant layouts.</p>
+
+<h3>2.  Visualizing CSV data</h3>
+<p>The previous examples visualized numerical values and define some connections based on a mathematical relation. Any arbitrary objects may be visualized with Mondrian. Consider the following example that displays data obtained from a CSV (comma separated file):</p>
+<p><figure><pre><code class="smalltalk">&quot;You need to load the plugin Neo JSON and CSV parser, available from the World menu&quot;
+csvContent := 
+'Santiago,5.1,Chile
+Valparaiso,0.5,Chile
+Paris,2.2,France
+Nice,0.7,France,
+Chile,16,
+France,66,'.
+values := (NeoCSVReader on: csvContent readStream) upToEnd.
+
+b := RTMondrian new.
+b shape circle 
+  size: [ :aName |  
+   (Float readFrom: (values detect: [ :a | a first = aName ]) second) log * 30 ];
+  withTextAbove.
+
+b nodes: (values collect: #first).
+b edges connectFrom: [ :aName | (values detect: [ :a | a first = aName ]) third ] .
+b layout tree.
+b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianCityAndCountry01"></a><figure><img src="figures/mondrianCityAndCountry01.png" width="40%"></img><figcaption>2.1. Cities and countries</figcaption></figure></p>
+<p>Figure <a href="#mondrianCityAndCountry01">2.1</a> illustrates the result. Data obtained from a CSV description is used in the visualization. Each city and country is represented as a circle. The size of the circle represents the number of people living in the city or the country. We use a logarithmic scale to cope with large variations.</p>
+
+<p>To keep the example concise and self-contained, the CSV content is provided as a Pharo String. If you wish to have the file externally provided, then you may simply have
+<figure><pre><code class="smalltalk">	csvContent := 'file.csv' asFileReference contents.
+	values := (NeoCSVReader on: csvContent readStream) upToEnd.
+	...</code></pre><figcaption></figcaption></figure>
+In that case, a file named <code>file.csv</code> has to be in the same folder as your Pharo image. A full path may be provided.</p>
+<h3>3.  Mondrian Script Structure</h3>
+<p>As illustrated in the example given above, a script in Mondrian essentially contains five different sections: shape description, node declaration, edge declarations, layout description, normalization.</p>
+<p>The message <code>shape</code>, <code>layout</code>, <code>edges</code> sent to an <code>RTMondrian</code> object returns a shape, layout builder, and edge builders, respectively. Sending the message <code>nodes:</code> creates some elements using the shape previously defined. </p>
+<h3>4.  Visualizing Software</h3>
+<p>As a first example, consider the following script (Figure <a href="#mondrianClassHierarchySystemComplexity">4.1</a>):
+<figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape rectangle
+		withBorder;
+		width: [ :cls | cls numberOfVariables * 5 ];
+		height: [ :cls | cls numberOfMethods ].
+
+	b nodes: Collection withAllSubclasses.
+	b edges connectToAll: [ :cls | cls subclasses ].
+	b layout tree.
+	b normalizer
+		normalizeColorAsGray: [ :cls | cls numberOfLinesOfCode ].
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianClassHierarchySystemComplexity"></a><figure><img src="figures/mondrianClassHierarchySystemComplexity.png" width="95%"></img><figcaption>4.1. Visualizing a class hierarchy</figcaption></figure></p>
+<p>The script visualizes the collection class hierarchy obtained with the expression <code>Collection withAllSubclasses</code>. Relation between nodes is obtained by linking each nodes to its subclasses. A tree layout is then set.</p>
+<p>Each box of the visualization represents a class. The height of a class indicates its amount of methods that it defines. The width indicates the number of variables the class defines. The color indicates the number of lines of code the class defines (white = the class with the smallest number of lines of code, black = the heaviest class). Each of Mondrian node is draggable and has a tooltip. </p>
+<p>The normalizer may also give a particular color to an element based on an attribute or a property. Consider the following example (Figure <a href="#mondrianDistinctColorUsing">4.2</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape circle.
+	b nodes: Collection withAllSubclasses.
+	b shape line color: Color veryLightGray.
+	b edges 
+		moveBehind;
+		connectFrom: #superclass.
+	b layout cluster.
+	b normalizer
+		normalizeSize: #numberOfMethods min: 6 max: 40;
+		distinctColorUsing: #package.
+	b</code></pre><figcaption></figcaption></figure>
+<a name="mondrianDistinctColorUsing"></a><figure><img src="figures/mondrianDistinctColorUsing.png" width="80%"></img><figcaption>4.2. Each circle is a class and its color indicates the class packages</figcaption></figure></p>
+<p>The script simply associates a circle to each class, subclass of the class <code>Collection</code>. Edges indicates superclass links. The cluster layout makes subclasses located around a superclass. Each class has a color, representing the package of a class. Each package has a color, given by the message <code>distinctColorUsing:</code>.</p>
+
+<h3>5.  Nesting</h3><p>Mondrian offers a convenient way to nest elements. Each node may act as a space to which nodes may be added. The message <code>nodes:forEach:</code> has to be used for that purpose. Consider the following example (Figure <a href="#mondrianNesting">5.1</a>):
+<figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b nodes: (0 to: 90 by: 10) forEach: [ :each | 
+		b nodes: (1 to: each).
+		b layout grid
+	].
+	b layout flow.
+	b </code></pre><figcaption></figcaption></figure></p>
+<p>There are 10 top level nodes, representing the values 0, 10, 20, ..., up to 90. Each node contains an amount of inner values that correspond to the number it represents.</p>
+<p><a name="mondrianNesting"></a><figure><img src="figures/nesting.png" width="50%"></img><figcaption>5.1. Nesting elements</figcaption></figure></p>
+<p>Encapsulating nodes may also have a title and be connected (Figure <a href="#mondrianNestingWithTitle">5.2</a>):
+<figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape rectangle withTextAbove.
+	b nodes: RTShape withAllSubclasses forEach: [ :class |
+		b nodes: class methods.
+		b layout grid.
+	].
+	b edges connectToAll: #subclasses.
+	b layout tree.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianNestingWithTitle"></a><figure><img src="figures/mondrianNestingWithTitle.png" width="80%"></img><figcaption>5.2. Nesting elements</figcaption></figure></p>
+<p>The use of <code>withTextAbove</code> makes each encapsulating node have a title above. Node color may be set to reflect particular conditions, as in the following example (Figure <a href="#mondrianNestingWithTitleAndColor">5.3</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape rectangle withTextAbove; 
+		fillColor: Color white; borderColor: Color black.
+	b nodes: RTShape withAllSubclasses forEach: [ :class |
+		b shape rectangle
+			if: [ :m | m numberOfLinesOfCode &lt; 5 ] fillColor: Color green;
+			if: [ :m | m numberOfLinesOfCode &gt;= 5 ] fillColor: Color orange;
+			if: [ :m | m numberOfLinesOfCode &gt;= 10 ] fillColor: Color red.
+		b nodes: (class methods sortedAs: #numberOfLinesOfCode).
+		b layout grid.
+	].
+	b edges connectToAll: #subclasses.
+	b layout tree.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianNestingWithTitleAndColor"></a><figure><img src="figures/mondrianNestingWithTitleAndColor.png" width="80%"></img><figcaption>5.3. Nesting colored elements</figcaption></figure></p>
+<p>Inner nodes may have a proper shape and be connected. Consider the following version of the visualization of the Roassal shapes (Figure <a href="#mondrianConnectingNestedColored">5.4</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape rectangle withTextAbove; 
+		fillColor: Color white; borderColor: Color black.
+	b nodes: RTShape withAllSubclasses forEach: [ :class |
+		b shape rectangle
+			if: [ :m | m numberOfLinesOfCode &lt; 5 ] fillColor: Color green;
+			if: [ :m | m numberOfLinesOfCode &gt;= 5 ] fillColor: Color orange;
+			if: [ :m | m numberOfLinesOfCode &gt;= 10 ] fillColor: Color red;
+			size: [ :m | m numberOfLinesOfCode sqrt * 5 ].
+		b nodes: class methods.
+		b edges connectToAll: #dependentMethods.
+		b layout sugiyama.
+	].
+	b edges connectToAll: #subclasses.
+	b layout tree.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianConnectingNestedColored"></a><figure><img src="figures/mondrianConnectingNestedColored.png" width="80%"></img><figcaption>5.4. Connecting nested colored elements</figcaption></figure></p>
+
+<h3>6.  Visualizing File and Directories</h3>
+<p>File systems have a hierarchy driven by the nesting of folders and files. Consider the following code:</p>
+<p><figure><pre><code class="smalltalk">	fr := UIManager default chooseDirectory.
+	fr ifNil: [ ^ self ].
+	allChildren := fr allChildren.
+	allChildren := allChildren copyWithout: fr.
+
+	b := RTMondrian new.
+
+	b nodes: fr children forEach: [ :fileRef |
+		b shape box 
+			size: [ :f | (f size + 1) log * 3 ].
+		b nodes: fileRef allChildren.
+		b edges connectFrom: #parent.
+		b layout tree.
+
+	].
+	b layout verticalLine.
+	b normalizer
+		objects: allChildren;
+		distinctColorUsing: #extension.
+
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="mondrianFileSystemVisualization"></a><figure><img src="figures/mondrianFileSystemVisualization.png" width="95%"></img><figcaption>6.1. Visualization of a file system</figcaption></figure></p>
+<p>The instruction <code>UIManager default chooseDirectory</code> opens a file browser to let the user (<em>i.e.,</em> you) select a directory. The class <code>UIManager</code> offers many methods to require input from the user. The message <code>allChildren</code>, sent to the <code>FileReference</code> returned by <code>chooseDirectory</code>, returns a collection of all the file references. For each file directly contained in the selected directory, a hierarchy is shown. The size of a <code>box</code> representing a file depends on the number of characters contained in that file. A logarithmic scale is used to cope with file size disparities. Thanks to the GT infrastructure, clicking on a file displays its content.</p>
+
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Charting, Plotting and Curving using Charter</h2>
+<p>Charting, plotting and curving data points is the basis of many kinds of analyses. To enable this, Roassal provides Charter: a builder dedicated to draw charts. We will first present the three different kinds of charts that can be built using Charter, then discuss fine-tuning the chart, and end with a word on the implementation.</p>
+
+<h3>1.  Scatterplot</h3>
+<h4>1.1.  Simple chart</h4><p>Charter offers flexible way to draw scatterplots. Consider the following example, to be evaluated in a playground:</p>
+<p><figure><pre><code class="smalltalk">	methods := Collection withAllSubclasses flatCollect: #methods.
+
+	b := RTCharterBuilder new.
+	b extent: 200 @ 200.
+	b shape circle color: (Color red alpha: 0.3).
+	b points: methods.
+	b x: #numberOfLinesOfCode.
+	b y: [ :m | m getSource size ].
+
+	b axisX.
+	b axisY.
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="scatterPlot01"></a><figure><img src="figures/scatterPlot01.png" width="50%"></img><figcaption>1.1. Scatterplot built by hand</figcaption></figure></p>
+<p>Figure <a href="#scatterPlot01">1.1</a> illustrates the result of the script given above. In the code, the variable <code>methods</code> contains all the methods of the Pharo Collection class hierarchy. Note that approximately 3,500 methods are defined in the hierarchy.</p>
+<p>The use of <code>extent:</code> defines the size in pixels of the part in which charts are drawn. Each data point will be represented as a circle, using the default size of 5 pixels, and a translucent red. The collection of data points is specified using <code>points:</code>. </p>
+<p>The x-value and y-value have to be computed for each data point. The method objects contained in the <code>methods</code> collection answer to the message <code>numberOfLinesOfCode</code>, returning the number of lines of code for the method definition. The block <code>[ :m | m getSource size ]</code> returns the number of characters that define the method.</p>
+<p>Lastly, the two axes are then added, each having 4 ticks by default. </p>
+<p>Figure <a href="#scatterPlot01">1.1</a> reveals an obvious correlation between the number of lines of code and the number of characters of the method. Deviation from the diagonal indicates methods with either very long or very short lines of code.</p>
+<h4>1.2.  Multiple charts</h4><p>Charter supports different data set to be simultaneously displayed. Consider the following example:</p>
+<p><figure><pre><code class="smalltalk">	methods := Collection withAllSubclasses flatCollect: #methods.
+	trachelMethods := TRObject withAllSubclasses flatCollect: #methods.
+
+	b := RTCharterBuilder new.
+	b extent: 200 @ 200.
+
+	&quot;Data set 1&quot;
+	b shape circle color: (Color red alpha: 0.3).
+	b points: methods.
+
+	&quot;Data set 2&quot;
+	b shape circle color: (Color blue alpha: 0.3).
+	b points: trachelMethods.
+
+	&quot;The same metrics for all data points&quot;
+	b allX: #numberOfLinesOfCode.
+	b allY: [ :m | m getSource size ].
+
+	b axisX.
+	b axisY.
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="scatterPlot02"></a><figure><img src="figures/scatterPlot02.png" width="50%"></img><figcaption>1.2. Two data set in the same chart</figcaption></figure></p>
+<p>Figure <a href="#scatterPlot02">1.2</a> shows two colored data sets. The first data set, the methods of the Collection class hierarchy (<code>methods</code>), is colored in red. The second data set, all the methods defined in Trachel (<code>trachelMethods</code>), are colored in blue.</p>
+<h4>1.3.  Axis configuration </h4><p>Properly defining the X and Y axes is a complex task. A great deal of parameters usually have to be taken into account. By default, both axes have four ticks, and each tick is labelled with a numerical value with a precision of one decimal point. Charter however offers a number of configuration options for the configuration of Axis. For example, in our situation, both axes have to be labelled with integer values: the number of lines and the size of method definitions are integer values. Consider the example seen previously, for which only integer values with a comma as thousand separators:</p>
+<p><figure><pre><code class="smalltalk">	...
+	&quot;Axis configuration&quot;
+	b axisConfiguration withThousandsSeparator.
+	b axisXTitled: 'LOC'.
+	b axisYTitled: 'Size'.
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p class="todo">there should be a table here with a list of the configuration options and an indication on how to find them in the code. (JF)</p>
+<p><a name="scatterPlot03"></a><figure><img src="figures/scatterPlot03.png" width="50%"></img><figcaption>1.3. Axis configuration</figcaption></figure></p>
+<h3>2.  Curve</h3><p>A curve is obtained by connecting data points with a line. Curves may be obtained intensionally by giving a function or extensionally by providing the data points.</p>
+<h4>2.1.  Function</h4><p>Consider the following script:
+<figure><pre><code class="smalltalk">	b := RTCharterBuilder new.
+	b extent: 200 @ 200.
+
+	b shape rectangle size: 0.
+	b points: (0 to: 3.1415 * 5 by: 0.01).
+	b y: #sin.
+	b x: #yourself.
+	b connectDotColor: (Color red alpha: 0.4).
+
+	b shape rectangle size: 0.
+	b points: (0 to: 3.1415 * 5 by: 0.01).
+	b y: #cos.
+	b x: #yourself.
+	b connectDotColor: (Color blue alpha: 0.4).
+
+	b axisX.
+	b axisY.
+
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p class="todo">Why b y: [ :v | v sin ]. and not b y: #sin. ? and idem for cos. ? I have changed it to be more consistent internally. (JF) </p>
+<p>Each data point is defined as a rectangle of size 0. Which means that each datapoint will not be drawn. Instead, they are linked to each other via a connecting line, as defined by the new keyword here <code>connectDotColor:</code>. A Line is drawn between the dots in the order they were provided to <code>points:</code>.</p>
+<p><a name="curve01"></a><figure><img src="figures/curve01.png" width="50%"></img><figcaption>2.1. Curves defined as functions</figcaption></figure></p>
+<h4>2.2.  Stacking</h4><p>Data points may be stacked, meaning that the index of the point in the collection is its X value. This is useful in case that data points are not obtained by applying a function. Consider the following example: it shows 4 data points horizontally ordered in the same order as they were provided to <code>points:</code>, as seen in Figure <a href="#curve02">2.2</a>.</p>
+<p><figure><pre><code class="smalltalk">	b := RTCharterBuilder new.
+
+	b shape rectangle color: Color red.
+	b points: #(5 1 20 5).
+	b stackX.
+	b y: #yourself.
+
+	b axisY.
+	b axisConfiguration noDecimals.
+	b axisX.
+
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="curve02"></a><figure><img src="figures/curve02.png" width="30%"></img><figcaption>2.2. Simple stack of data points</figcaption></figure></p>
+
+<p>A slightly more elaborate example is given below. Each curve is a class contained in Roassal. Each data point is a method, sorted in a reverse alphabetical order. The Y-value of a method is its size in number of lines of code.</p>
+<p><figure><pre><code class="smalltalk">	classes := RTShape withAllSubclasses.
+
+	b := RTCharterBuilder new.
+	b extent: 400 @ 200.
+
+	normalizer := RTMultiLinearColorForIdentity new objects: classes.
+	classes do: [ :c |
+		| data |
+		data := (c methods reverseSortedAs: #numberOfLinesOfCode ).
+	
+		b interaction popup.
+		b shape rectangle color: (normalizer rtValue: c).
+		b points: data.
+		b connectDotColor: (normalizer rtValue: c).
+	].
+
+	b allY: #numberOfLinesOfCode.
+	b stackX.
+
+	b axisX.
+	b axisY.
+
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="curve03"></a><figure><img src="figures/curve03.png" width="80%"></img><figcaption>2.3. Stacking data points</figcaption></figure></p>
+<p>Figure <a href="#curve03">2.3</a> shows 27 different curves, each representing a subclass of the class <code>RTShape</code>.</p>
+<p>Also, a distinct color is given to each curve. This is useful to be able to differentiate classes. To achieve this, a <code>RTMultiLinearColorForIdentity</code> object has to be initialized with the objects that will be colored. The message <code>objects:</code> is used for that purpose. The expression <code>(normalizer rtValue: c)</code> will return a color that is specific for the argument <code>c</code>.</p>
+<h4>2.3.  Stacking multiple curve</h4>
+<p class="todo">I do not understand this section at all. What is the problem and what is the solution? (JF)</p>
+<p>Composing stacked curves requires manually adjusting the scale of the Y-axis. The scaling is typically done using <code>minY</code> and <code>maxY</code> variables.
+Consider two data sets <code>#(1 1 4 6)</code> and <code>#(2 4 2 10 5 2)</code> (Figure <a href="#multipleCurveStacking">2.4</a>):</p>
+<p><figure><pre><code class="smalltalk">	points1 := #(1 1 4 6).
+	points2 := #(2 4 2 10 5 2).
+
+	minY := 0.
+	maxY := (points1 maxValue: #yourself) max: (points2 maxValue: #yourself).
+
+	b := RTCharterBuilder new.
+	b extent: 200 @ 200.
+	b points: points1.
+	b connectDotColor: Color blue.
+	b y: #yourself min: minY max: maxY.
+
+	b points: points2.
+	b connectDotColor: Color green.
+	b y: #yourself min: minY max: maxY.
+	b stackX.
+
+	b axisXNoLabel; axisY.
+	b build</code></pre><figcaption></figcaption></figure></p>
+<p><a name="multipleCurveStacking"></a><figure><img src="figures/multipleCurveStacking.png" width="30%"></img><figcaption>2.4. Stacking multiple curve</figcaption></figure></p>
+<p>Charting these two sets requires one single call to <code>stackX</code>. The metric function for the Y-axis has to be specified using <code>y:</code> (simply <code>#yourself</code> in our example).</p>
+<h4>2.4.  Data point aspect</h4>
+<p class="todo">this section is already too big and this info is already relevant for scatterplots. Why not move it back: make the example with different colors in the Multiple charts section of scatterplot also use different shapes? (JF)</p>
+<p>The visual aspects of data points may be customized. Consider the following example. </p>
+<p><figure><pre><code class="smalltalk">	b := RTCharterBuilder new.
+	b extent: 200 @ 100.
+	b shape rectangle color: Color red.
+	b points: (RTShape withAllSubclasses sortedAs: #ageInDays).
+
+	b shape circle color: Color blue.
+	b points: (TRShape withAllSubclasses sortedAs: #ageInDays).
+
+	b stackX.
+	b allY: [ :c | c ageInDays ].
+
+	b axisConfiguration noDecimals.
+	b axisX.
+	b axisY.
+
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="curve04"></a><figure><img src="figures/curve04.png" width="50%"></img><figcaption>2.5. Data point aspect</figcaption></figure></p>
+<p>Figure <a href="#curve04">2.5</a> represents the age of shape classes contained in Trachel (<em>i.e.,</em> subclasses of the class <code>TRShape</code>) and Roassal (<em>i.e.,</em> subclasses of the class <code>RTShape</code>). Trachel shapes are older than Roassal shapes.</p>
+<h3>3.  Bar</h3>
+<p><code>RTCharterBuilder</code> supports bar charts. The following example displays a simple bar chart (Figure <a href="#histogram01">3.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTCharterBuilder new.
+	b extent: 100 @ 100.
+	b shape rectangle size: 0.
+	b interaction popup.
+	b points: #(10 5 4).
+	b y: #yourself.
+	b stackX.
+	b shape rectangle color: Color blue.
+	b histogram.
+
+	b axisY.
+	b newAxisConfiguration plain.
+	b axisX.
+
+	b build.</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="histogram01"></a><figure><img src="figures/histogram01.png" width="30%"></img><figcaption>3.1. Simple bar chart</figcaption></figure></p>
+<p>In a bar chart, data points are typically not visible. Setting a size of 0 will make data points not apparent. The use of the interaction popup makes the bars react when the mouse is above a bar. Three numerical values are provided, and the height of a bar is given by the value itself. Bar are stacked from left to right and are colored in blue. </p>
+<p class="todo">There is too much magic here. Is the histogram method responsible for the bar-chart-nature? What's with the b shape rectangle color: Color blue. then? Do I need to do this before the histogram or can I also do it after? What are the other magic messages that make a bar chart and what is their semantics? Also, the interaction stuff should be moved to the next section. (JF)</p>
+<h3>4.  Interaction</h3>
+<p>Interactions may be defined to get particular behavior upon user actions. Typical cases is getting a value when the mouse hovers a point or a bar.</p>
+<p class="todo">This should be clear that it's for all kinds of charts. Can you add a simple example for scatterplot and for line? (JF)</p>
+<p>Consider the following code (Figure <a href="#interactionInHistogram">4.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTCharterBuilder new.
+	b extent: 300 @ 200.
+	b shape rectangle size: 0.
+	b points: (RTShape withAllSubclasses).
+	b y: [ :c | c methods size ].
+	b stackX.
+	b shape rectangle color: Color veryLightGray.
+
+	b interaction highlightColored: Color red.
+
+	b interaction popup 
+		named: [ :c | c name, ' methods'] 
+		background: Color veryVeryLightGray 
+		group: [ :group :element | 
+			| s ms |
+			s := RTBox new size: #numberOfLinesOfCode; color: Color red.
+			ms := element model methods sortedAs: #numberOfLinesOfCode.
+			group addAll: (s elementsOn: ms).
+			RTGridLayout on: group ].
+	
+	b histogram.
+
+	b axisY.
+	b newAxisConfiguration plain.
+	b axisX.
+
+	b build.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="interactionInHistogram"></a><figure><img src="figures/interactionInHistogram.png" width="55%"></img><figcaption>4.1. Interaction in histogram</figcaption></figure></p>
+<p>Two interactions are defined on each bar. First, the bar on which the mouse is above is red. The original bar color is restored when the mouse leaves the bar. The second interaction is a grouped popup, which has a name, a background color, and a set of method elements. The size of a method reflects the number of lines of code defining the method.</p>
+
+<h3>5.  Distribution</h3>
+<h3>6.  Logarithmic Scale</h3>
+<h3>7.  Axis Range</h3>
+<h3>8.  Date on the axis </h3>
+<p>Dates are particular values that requires an adequate control over what is being displayed on the X-axis. This is enabled using the julianDayNumber message on a date object, converting it into a number.</p>
+<p>Consider the following example that shows the creation of methods along time (Figure <a href="#dateOnAxis">8.1</a>):</p>
+<p><figure><pre><code class="smalltalk">methods := RTObject withAllSubclasses flatCollect: #methods.
+methods := methods reject: [ :m | m numberOfLinesOfCode &gt; 150 ].
+oldestMethod := methods minFor: #date.
+
+b := RTCharterBuilder new.
+b extent: 300 @ 200.
+b shape circle size: 5; color: (Color blue alpha: 0.1).
+b interaction popup.
+b points: methods.
+b allY: #numberOfLinesOfCode.
+b allX: [ :m | m date julianDayNumber - oldestMethod date julianDayNumber ].
+
+b axisConfiguration 
+	noDecimals;
+	title: 'LOC'.
+b axisY.
+b axisConfiguration 
+	title: '';
+	labelRotation: -30;
+	numberOfTicks: 10;
+	numberOfLabels: 10;
+	labelConvertion: [ :v | (Date julianDayNumber: v + oldestMethod date julianDayNumber) ].
+b axisX.
+
+b build</code></pre><figcaption></figcaption></figure></p>
+<p class="todo">the code sais numberOfTicks: 10; numberOfLabels: 10; but this is not what's shown. (JF)</p>
+<p><a name="dateOnAxis"></a><figure><img src="figures/dateOnAxis.png" width="60%"></img><figcaption>8.1. Date on the X-axis</figcaption></figure></p>
+<h3>9.  Line Shape</h3>
+<p class="todo">dashed, thickness</p>
+<h3>10.  Internal of RTCharterBuilder</h3>
+<p>Drawing charts often implies normalizing elements over a well determined range of values. Typically the size of the chart. The class <code>RTCharterBuilder</code> is built on the principle illustrated in the following code:</p>
+<p><figure><pre><code class="smalltalk">	methods := Collection withAllSubclasses flatCollect: #methods.
+	v := RTView new.
+	es := (RTEllipse new color: Color red) elementsOn: methods.
+
+	v addAll: es.
+	RTMetricNormalizer new
+		elements: es;
+		alphaColor: 0.2;
+		normalizeX: #numberOfLinesOfCode min: 0 max: 300;
+		normalizeY: [ :m | m getSource size ] min: 0 max: -300.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="internal01"></a><figure><img src="figures/internal01.png" width="50%"></img><figcaption>10.1. Scatterplot</figcaption></figure></p>
+<p>Figure <a href="#internal01">10.1</a> illustrates the result of the script. Each position coordinate ranges over a ordered set of values. </p>
+<h4>10.1.  Axis</h4><p>Each axis is described by an instance of <code>RTAxisConfiguration</code>.</p>
+<h4>10.2.  Histogram</h4><p>Rectangles are located below the data point. </p>
+
+<h4>10.3.  Stacking or not stacking a data set</h4><p>You will define an histogram as a list of values, e.g,. 4, 5, 6, 7
+You will define a scatterplot as a list of points, e.g., 2 @ 3, 5 @ 6, …</p>
+<p>An histogram is obtained from a list of objects, and a function Y to obtain the values.
+A scatter plot is obtained from a list of objects, and _two_ functions X and Y to obtain the points.</p>
+<p>When you do not need to specify an X, e.g., an histogram, then you need a RTStackedDataSet.
+When you need to specify an X, e.g., a scatter plot, then you need a RTDataSet.</p>
+
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

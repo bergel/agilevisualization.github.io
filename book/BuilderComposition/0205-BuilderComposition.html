@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Visualization Composition</h2>
+<p>As we have seen previously, a builder models user input and represents it by building a <code>RTView</code>. Visualizations produced by builders may be composed with other visualizations. This is particularly useful when two visualizations may be &quot;glued&quot; together to form a complex one.</p>
+<p>In essence, the composition of several builders is achieved by sharing a unique view among these builders and properly ordering elements added by each view. The class <code>RTComposer</code> specifically fulfills that purpose. </p>
+
+<h3>1.  Composing builders</h3>
+<p>Consider the following example (Figure <a href="#compoBasic">1.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	data := #(20 30 50 100).
+
+	c := RTComposer new.
+
+	&quot;First visualization&quot;
+	g := RTGrapher new.
+	g extent: 200 @ 200.
+	g view: c view.
+	ds := RTData new.
+	ds interaction popup.
+	ds barShape color: Color blue.
+	ds points: data.
+	g add: ds.
+	g axisX noTick; noLabel.
+	g build.
+	c group: #graph.
+
+	&quot;Second visualization&quot;
+	b := RTPieBuilder new.
+	b view: c view.
+	b interaction popup.
+	b objects: data.
+	b slice: #yourself.	
+	b labeled.
+	b build.
+	c group: #pie.
+
+	&quot;Layouting&quot;
+	c move: #graph onTheLeftOf: #pie.
+
+	RTMetricNormalizer new
+		view: c view;
+		objects: data;
+		distinctColor.
+
+	c view</code></pre><figcaption></figcaption></figure></p>
+<p><a name="compoBasic"></a><figure><img src="figures/compoBasic.png" width="50%"></img><figcaption>1.1. Composition of two visualizations</figcaption></figure></p>
+<p>The variable <code>data</code> contains four numbers and represents the input of the script. Two visualizations are composed, using <code>RTGrapher</code> and <code>RTPieBuilder</code>. The variable <code>c</code> represents a composer. The two visualizations are composed of:</p><ul><li> Sharing the view to both builders. This is carried out with <code>g view: c view</code> and <code>b view: c view</code></li><li> After invoking <code>build</code> on a builder, the composer needs to snapshot the elements and give a name. The expression <code>c group: #graph</code> gives the name <code>#graph</code> to the elements added by <code>RTGrapher</code>. Similarly, elements added by <code>RTMondrian</code> are named <code>#mondrian</code>.</li><li> Adequately positioning elements produced by the builders. The expression <code>c move: #graph onTheLeftOf: #mondrian</code> performs this operation.</li></ul>
+<h3>2.  Propagating events</h3>
+<p>Events may be propagated from one builder to another. The method <code>propagateHighlight</code> defined on the class <code>RTComposer</code> serves this purpose. Consider a slightly different version of the previous script.</p>
+<p><figure><pre><code class="smalltalk">	data := #(20 30 50 100).
+
+	c := RTComposer new.
+
+	&quot;First visualization&quot;
+	g := RTGrapher new.
+	...
+	g build.
+	c group: #graph.
+
+	&quot;Second visualization&quot;
+	b := RTPieBuilder new.
+	...
+	b build.
+	c group: #pie.
+
+	&quot;Layouting&quot;
+	c move: #graph onTheLeftOf: #pie.
+	c propagateHighlightToAll.
+	
+	RTMetricNormalizer new
+		view: c view;
+		objects: data;
+		distinctColor.
+
+	c view</code></pre><figcaption></figcaption></figure></p>
+<p>In total, four bars and four squares are represented. Each group contains the model given by the variable <code>data</code>. Using <code>propagateHighlightToAll</code> highlights elements in the view that have the same model. This is useful when elements have to be globally highlighted.</p>
+<h3>3.  Titled visualization</h3>
+<p>It often happens that visualizations have to be given a title to make the overall picture meaningful. The class <code>RTComposer</code> offers the method <code>nameGroup:as:</code> to set a title to element groups. Consider the extension of the previous script (Figure <a href="#compoBasicWithName">3.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	...
+	&quot;Layouting&quot;
+	c move: #graph onTheLeftOf: #pie.
+
+	c nameGroup: #graph as: 'Values as a bar chart'.
+	c nameGroup: #pie as: 'Values as pie areas'.
+
+	RTMetricNormalizer new
+		view: c view;
+		objects: data;
+		distinctColor.
+	
+	c view</code></pre><figcaption></figcaption></figure></p>
+<p><a name="compoBasicWithName"></a><figure><img src="figures/compoBasicWithName.png" width="50%"></img><figcaption>3.1. Giving a title to a group of elements</figcaption></figure></p>
+
+<h3>4.  World population Example </h3>
+<p>The following example gives two representation of the World population. Using a geographical map and a bar chart (Figure <a href="#compoWorldPopulation">4.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	composer := RTComposer new.
+	v := composer view.
+	
+	&quot;========&quot;
+	b := RTMapBuilder new.	
+	b view: v.		
+		
+	countries := RTMapBuilder countriesPopulation select: [ :c | RTSVGPath countries includes: (c at: 1) ].
+	
+	cn := RTNColorLinearNormalizer
+		inContext: (countries collect: [:c | c at: 2])
+		lowColor: (Color r:0.8 g:0.8 b:1)
+		highColor: (Color r:0 g:0 b:0.3).
+	
+	b countries: countries named: [ :c | c at: 1 ].
+	b color: [ :dic | cn rtValue: (dic at: 2) ].
+	b withPopup: [ :c | (c at: 1) asString, ': ',(((c at: 2) / 1000000 asFloat round: 3) asString, ' Million') ].
+	b build.
+	composer group: #worldMap.
+
+	&quot;========&quot;
+	grapher := RTGrapher new.
+	grapher extent: 600 @ 300.
+	grapher view: v.
+	ds := RTData new.
+	ds barShape width: 5; color: Color blue.
+	ds points: ((countries reverseSortedAs: #second) copyFrom: 1 to: 50).
+	ds y: #second.
+	ds interaction popupText.
+	grapher add: ds.
+	grapher axisX noLabel; noTick; title: 'countries'.
+	grapher axisY noDecimal; labelConversion: [ :aValue | (aValue / 1000000) round: 2]; title: 'Millions'.
+	grapher build.
+	composer group: #graph.
+	
+	&quot;========&quot;
+	composer move: #graph above: #worldMap.
+	
+	composer nameGroup: #worldMap as: 'Human distribution across the globe'.
+	composer nameGroup: #graph as: 'Chart'.
+	composer propagateHighlightToAll.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="compoWorldPopulation"></a><figure><img src="figures/compoWorldPopulation.png" width="100%"></img><figcaption>4.1. Two representations of the world population</figcaption></figure></p>
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

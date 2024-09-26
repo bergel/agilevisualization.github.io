@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Overview of Roassal</h2>
+<p>Roassal is build on a very simple model to structure visualizations. Roassal is built on the notion of objects, elements, shapes, interaction, and view. </p>
+<p>An <em>element</em> is a wrapper to an external provided domain object (e.g., a number, a file, your object).
+To an element, you can add a <em>shape</em> (composed or not), and interaction. Elements are added in a <em>view</em>. This is necessary to see things on screen. Making elements activable from user actions, it is necessary to specificy some <em>interaction</em> on elements.</p>
+<p>This chapter gives an extended overview of the Roassal API. It covers the essential concepts of Roassal, such as the view, elements, shapes, and interactions. </p>
+<p>Builders are at a higher level. Builders offer API to build more sophisticated elements, shapes, interactions and layouts. But it all boils down into shapes and interaction added to elements, and elements added to a view. The builder infrastructure is described in the second part of the book.</p>
+
+<h3>1.  View, Elements, Shapes and Interactions</h3>
+<p>Roassal structures a visualization in terms of view, elements, shapes, interactions, and animations.
+A <em>view</em> is a container of graphical elements. Elements can be added and removed from a view.</p>
+<p>An <em>element</em> is a graphical representation of an arbitrary object. An end-user sees elements and interacts with them using the mouse and keyboard. An element contains <em>shapes</em> that define its visual representation. A shape describes a primitive visual representation such as a box, a circle, a line or a textual label. Shapes can be combined to form more elaborate shapes.</p>
+<p>More specifically, a Roassal element is a compound object that contains (i) a two dimensional spatial location; (ii) a set of interactions; (iii) a combination of shapes; (iv) a model, which is any arbitrary object that belongs to the domain model provided by the user.
+To be visible, elements must have at least one shape. One key aspect of Roassal is that shapes may hold metrics or numerical values that define their visual dimensions (<em>e.g.,</em> height, width, color, border width). Instead of giving absolute numerical values to define the visual aspect of the graphical element (as with most visualization frameworks), functions that calculate the metrics may also be provided.</p>
+<p>An <em>interaction</em> is a particular action the user may trigger. The range of supported interactions is broad: dragging elements, popping up an element on hover, highlighting other elements, getting a menu by right-clicking on an element. </p>
+<p>The following example renders a tree, where each node is a number (Figure <a href="#linkingNumber">1.2</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	shape := RTBox new color: (Color blue alpha: 0.3).
+	elements := shape elementsOn: (1 to: 50).
+	v addAll: elements.
+	elements @ RTPopup.
+
+	RTEdgeBuilder new
+		view: v;
+		objects: (1 to: 50) from: [ :i | i // 3 ].
+
+	RTTreeLayout on: elements.
+	v  </code></pre><figcaption></figcaption></figure></p>
+<p>The first assignment to the variable <code>v</code> creates a new view that is empty. 
+A colored box shape is then created. The expression <code>Color blue alpha: 0.3</code> specifies its color to be  the blue color with 30% of transparency. 
+The shape is then used as a factory of elements, creating a shape for each element of a collection of numbers (a range from 1 to 50). 
+The expression <code>@ RTPopup</code> makes each element react when the mouse hovers over it: a popup is displayed that shows the model of the element (<em>i.e.</em> the number).</p>
+<p>The relations between the elements are then expressed using the class <code>RTEdgeBuilder</code>. An instance of <code>RTEdgeBuilder</code> is created and then parametrized with the view. This is done in order for it to be able to retrieve the elements between which the edges will be drawn. Then the code specifies that for each number <em>i</em> between 1 and 50, an edge is drawn between <em>i</em> and <em>i // 3</em>  (the remainder of the division <em>i / 3</em>).</p>
+<p><a name="linkingNumber"></a><figure><img src="figures/example01.png" width="80%"></img><figcaption>1.1. Linking numbers</figcaption></figure></p>
+<p>The following code is a a slighly more elaborated example that extracts data from a Tab Separated Values (TSV) table (Figure <a href="#linkingNumber">1.2</a>):</p>
+<p><figure><pre><code class="smalltalk">	&quot;Processing a small TSV table&quot;
+	tab := RTTabTable new input: 
+	'id	value1	value2	parent
+	1	10	20	1
+	2	5	12	1
+	3	8	17	1
+	4	9	13	3'.
+	tab removeFirstRow.
+	tab convertColumnsAsInteger: (1 to: 4).
+
+	v := RTView new.
+	shape := RTBox new
+					width: [ :entry | entry second ];
+					height: [ :entry | entry third ].
+	elements := shape elementsOn: tab values.
+	v addAll: elements.
+
+	elements @ (RTPopup new text: [ :entry | 
+		'id = ', entry first asString, String cr, 
+		'value1 = ', entry second asString, String cr,
+		'value2 = ', entry third asString, String cr ]).
+
+	elements @ (RTLabelled new text: [ :entry | entry first ]).
+
+	RTEdgeBuilder new
+		view: v;
+		objects: tab values from: [ :entry | tab values at: entry fourth ].
+
+	RTHorizontalTreeLayout new
+		verticalGap: 30; on: elements.
+	v  </code></pre><figcaption></figcaption></figure></p>
+<p><a name="linkingNumber"></a><figure><img src="figures/example02.png" width="20%"></img><figcaption>1.2. Linking TSV elements</figcaption></figure></p>
+<p>We extract and visualize data from a TSV table as typical spreadsheet applications are able to generate such documents. In this example, we assume that each row contains a numerical identifer, two values, and the identifer of a parent table entry.  </p>
+<p>The class <code>RTTabTable</code> converts the textual description of the table (<em>i.e.,</em> the raw file content) into actual values that are usable by Roassal. The first row of the table is removed since it simply names the columns. The four columns are then converted into integer numerical values.</p>
+<p>Since each table entry contains two values, we define a graphical box of wich the width and the height are directly mapped to the first and second value, respectively. A popup is then defined that gives more details about the table entry. This is followed by labeling each element with the first numerical entry value, the identifier. </p>
+<p>Lastly, edges are built, linking each entry to its parent, and all elements are laid out as a horizontal tree. Note that we assume here that (i) entries are ordered in the table according to their identifier and (ii) the parent of the first entry is the entry itself.</p>
+<h3>2.  Shapes</h3>
+<p>In Roassal, a multiple of primitive shapes are offered, and these are classified in the two families of <em>elements</em> and <em>edges</em>.
+ </p><h4>2.1.  Element shapes</h4><p>Six element shapes are meant to cover typical usage:</p><ul><li> <code>RTBox</code>: a rectangular box, <em>e.g.,</em> <code>RTBox new width: 10; height: 20</code></li><li> <code>RTEllipse</code>: an ellipse, <em>e.g.,</em> <code>RTEllipse new width: 10; height: 20</code></li><li> <code>RTLabel</code>: a textual label, <em>e.g.,</em> <code>RTLabel new text: 'hello world'</code>. The text may be multi-lined.</li><li> <code>RTPolygon</code>: a polygon, <em>e.g.,</em> <code>RTPolygon new vertices: { 25 @ 0 . 10 @ 50 . 50 @ 20 }</code></li><li> <code>RTBitmap</code>: an image., <em>e.g.,</em> <code>RTBitmap new form: RTIcon roassal</code></li><li> <code>RTSVGPath</code>: an SVG path, <em>e.g.,</em> <code>RTSVGPath new path: 'M150 0 L75 200 L225 200 Z'</code></li><li> <code>RTArc</code>: arc portion, <em>e.g.,</em> <code>RTArc new externalRadius: 100; innerRadius: 20; outerAngle: 45 innerAngle: 90</code></li></ul>
+<p>For each of the examples above, filling in  the <code>...</code> in the following code template will produce a visualization of the shape.
+<figure><pre><code class="smalltalk">	v := RTView new.
+	shape := ... .
+	v add: shape element.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>An element shape understands the following messages, amongst others:</p><ul><li> <code>size:</code> sets both width and height to the argument given</li><li> <code>width:</code> and <code>height:</code> set the width and the height, respectively</li><li> <code>color:</code> sets the fill color of the shape</li><li> <code>borderColor:</code> sets the border color of the shape</li></ul>
+<p>The complete set of messages that may be used with element shapes is declared in the classes <code>RTShape</code> and <code>RTAbstractElementShape</code>. </p>
+<h4>2.2.  Edge shapes</h4><p>Edges are typically drawn between two elements. Similar to elements, an edge may have a shape.</p><ul><li> <code>RTLine</code>: a straight line between its extremities, <em>e.g.,</em> <code>RTLine new color: Color blue</code></li><li> <code>RTArrow</code>: an arrowed line between its extremities, <em>e.g.,</em> <code>RTArrow new color: Color blue</code></li><li> <code>RTDirectedLine</code>: a directed line, <em>e.g.,</em> <code>RTDirectedLine new</code>. Direction is given by the curving of the line.</li><li> <code>RTMultiLine</code>: segmented lines, <em>e.g.,</em> <code>RTMultiLine new orthoVertical; color: Color blue</code></li></ul>
+<p class="todo">Unclear: Direction is given by the curving of the line.</p>
+<p>The following template shows the use of edge shapes. As above, simply replace <code>...</code> by an expression given above. At the end of the example code both shapes are set to be draggable, which serves to illustrate how edges are dynamically updated when shapes are dragged around the canvas.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+
+	elementShape := RTEllipse new size: 20; color: (Color blue alpha: 0.3).
+	e1 := elementShape element.
+	e2 := elementShape element.
+
+	shape := ... .
+	v add: (shape edgeFrom: e1 to: e2).
+
+	v add: e1.
+	v add: e2.
+	e1 @ RTDraggable.
+	e2 @ RTDraggable.
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<h4>2.3.  Functions and metrics as parameters</h4>
+<p>A graphical element acts as a visual facade for the object that the element represents, <em>i.e.</em> for its model. Roassal transparently associates each element to this model object. Typically these objects are provided by the user. For example, In the case given previously of the number of the TSV table entries, each Roassal element represents an entry from the table. Each element has a particular size that is computed from the table entry.</p>
+<p>The visual representation given by an element's shapes and the interactions offered to the end user depends on the model object. In Figure <a href="#linkingNumber">1.2</a>, all the elements have the same shape: a <code>RTBox</code> object with two functions used to compute the width and the height of an element. These functions are evaluated against the table entry given as a parameter when the element is created. </p>
+<p>The benefit of having a model object for each element is a transparent update mechanism. As soon as this object is modified (and different caches are properly reset), the visual representation of the element and its interactions are updated accordingly. </p>
+<h4>2.4.  Shape composition</h4><p class="todo">change example. </p>
+<p>More elaborate shapes may be obtained by composing the primitive shapes given above. For example, the shape <code>RTMultiCompositeShape</code> is a composite of shapes. </p>
+<p>Consider the following example that paints four national European flags (Figure <a href="#flags">2.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	view := RTView new.
+	shape := RTMultiCompositeShape new.
+	shape add: (RTBox new color: #first; height: 20; width: 15).
+	shape add: (RTBox new color: #second; height: 20; width: 15) translateBy: 15 @ 0.
+	shape add: (RTBox new color: #third; height: 20; width: 15) translateBy: 30 @ 0.
+
+	flags := Dictionary new.
+	flags at: 'France' put: (Array with: Color blue with: Color white with: Color red).
+	flags at: 'Belgium' put: (Array with: Color black with: Color yellow with: Color red).
+	flags at: 'Romania' put: (Array with: Color blue with: Color yellow with: Color red).
+	flags at: 'Italia' put: (Array with: Color green with: Color white with: Color red).	
+
+	els := shape elementsOn: flags values.
+	view addAll: els.
+
+	RTGridLayout new on: els.
+	view</code></pre><figcaption></figcaption></figure></p>
+<p><a name="flags"></a><figure><img src="figures/flags.png" width="25%"></img><figcaption>2.1. Example of composing shapes</figcaption></figure></p>
+<p>Composed shapes are often employed to give a title to elements. The following example visualizes some of the classes defined in Roassal (Figure <a href="#boxWithTitle">2.2</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	shape := RTMultiCompositeShape new.
+	shape add: (RTLabel new color: Color gray).
+	shape add: (RTBox new color: Color lightRed; 
+					width: [ :cls | cls numberOfVariables * 8 ]; 
+					height: #numberOfMethods).
+	shape vertical.
+	es := shape elementsOn: RTShape withAllSubclasses.
+
+	v addAll: es.
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="boxWithTitle"></a><figure><img src="figures/boxWithTitle.png" width="55%"></img><figcaption>2.2. Giving a title to some boxes</figcaption></figure></p>
+<p>Each class is represented as a composite shape. A title is first added to the composite shape. Then a box is added, its width is set as the number of variables and the number of methods is set as its height.</p>
+<h3>3.  Element transformation</h3>
+<p>An element may be translated in the view using the <code>translateBy:</code> and <code>translateTo:</code> messages, both taking a point as argument. </p>
+<p>Elements may be rotated by sending <code>rotateByDegrees:</code>. This message accepts as argument a numerical value (<em>e.g.,</em> <code>rotateByDegrees: 30</code>), a symbol or a block, as in the following example (Figure <a href="#rotateByDegree">3.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	shape := RTBox new width: 5; height: 25.
+	es := shape elementsOn: (1 to: 90 by: 5).
+	es rotateByDegrees: #yourself.
+	RTHorizontalLineLayout new gapSize: 2; on: es.
+	v addAll: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="rotateByDegree"></a><figure><img src="figures/rotateByDegree.png" width="40%"></img><figcaption>3.1. Elements may be rotated</figcaption></figure></p>
+<p>18 elements are added in the view. Each element represents a value between 1 and 90, with an interval of 5. The variable <code>es</code> represents a group of elements. By sending the message <code>rotateByDegrees:</code> to a group, each element of the group is rotated as specified in the argument of the message.  </p>
+
+<h3>4.  Group of elements</h3>
+<p>The class <code>RTGroup</code> is an ordered collection aimed to contains elements. A group is a composite of elements and dispatches to each contained element received messages. A group may be resized, rotated, and scaled.</p>
+<p class="todo">give example</p>
+<h3>5.  Nesting elements</h3>
+<p>Expressing containment is critical as soon as the data to be represented is hierarchical. Being able to embed some elements into other elements is an easy and cheap way to express encapsulation. Roassal offers several options to express nesting or encapsulation, all rooted in the class <code>RTNest</code>.</p>
+<p>The message <code>on: element nest: someElements</code> is probably the most commonly used. This message nests <code>someElements</code> into <code>element</code>. Consider the following example:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	el := (RTBox new width: 80; height: 40; color: (Color purple alpha: 0.3)) element.
+	shape := RTBox new color: (Color red alpha: 0.3); size: #yourself.
+	
+	innerElements := (1 to: 30) collect: [ :i | shape elementOn: i ].
+	v addAll: innerElements.
+	
+	RTGridLayout new on: innerElements.
+	RTNest new 
+		on: el nest: innerElements.
+	v add: el.
+	v</code></pre><figcaption></figcaption></figure>
+<a name="nesting02"></a><figure><img src="figures/nesting02.png" width="30%"></img><figcaption>5.1. Nesting boxes into a larger box</figcaption></figure></p>
+<p>The message <code>on:nest:</code> takes as the first argument an element, onto which you wish to nest the elements provided as second argument. The nesting element (<em>i.e.,</em> the first argument provided to <code>on:nest:</code>, <code>el</code> in our example) is resized to encapsulate the nested elements. Dragging using the mouse the nesting elements also drag on the nested elements.</p>
+<p>The precedent example first set the layout for the inner elements, then nest the element (<code>RTGridLayout on: inner. RTNest new on: el nest: inner. </code>).
+A layout may be specified when using <code>RTNest</code>. This may be written 
+<figure><pre><code class="smalltalk">	RTNest new 
+		layout: RTGridLayout new;
+		on: el nest: innerElements.</code></pre><figcaption></figcaption></figure></p>
+<p>The message <code>for:add:</code> helps recurring the nesting. Consider the example (Figure <a href="#forAdd">5.2</a>):
+<figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new color: Color blue) elementsOn: (1 to: 20).
+	v addAll: es.
+
+	RTNest new
+		for: es add: [ :group :model |
+			group addAll: ((RTBox new color: Color red) elementsOn: (1 to: model)).
+			RTGridLayout on: group ].
+
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure>
+<a name="forAdd"></a><figure><img src="figures/forAdd.png" width="40%"></img><figcaption>5.2. Using <code>for:add:</code> to nest elements</figcaption></figure></p>
+<p>The message <code>for:add:</code> takes as first argument the group of elements to go over. The second argument is a block that follows the pattern <code>[ :group :model | ... ]</code>. The variable <code>group</code> is a group in which elements to be nested have to be added into. The variable <code>model</code> is the model represented by the nesting node. The model is often key to compute the elements to be nested.</p>
+<p>As a further example, consider the following script:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new color: Color white; borderColor: Color lightGray) elementsOn: { RTLayout . RTShape . RTBuilder }.
+	v addAll: es.
+	es @ RTDraggable.
+
+	RTNest new
+		for: es add: [ :group :model |
+			elements := (RTBox new color: Color red) elementsOn: model withAllSubclasses.
+			group addAll: elements.
+			edges := RTEdgeBuilder new
+				view: group;
+				objects: model withAllSubclasses
+				from: #superclass.
+			RTTreeLayout on: elements edges: edges .
+		].
+
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="forAddWithEdges"></a><figure><img src="figures/forAddWithEdges.png" width="80%"></img><figcaption>5.3. Using <code>for:add:</code> and edges</figcaption></figure></p>
+<p>Figure <a href="#forAddWithEdges">5.3</a> illustrates the usage of <code>for:add:</code> in which edges are added in the <code>group</code>.</p>
+<p class="todo">Different form of nesting. <code>for:inShape:add:</code>, <code>on:inShape:nest:layout:</code></p>
+<p class="todo">Nesting in a popup</p>
+<h3>6.  Giving behavior to element with interactions</h3>
+<p>Interaction are particular objects that set a particular behavior on Roassal elements. Such behavior is typically actionnable by a particular user action (<em>e.g.,</em> mouse click, mouse overring, key stroke). Interaction may be set to a view, elements or edges.</p>
+<p>Three interactions may be set to a view:</p><ul><li> <code>RTDraggableView</code> to set a view draggable. <em>E.g.,</em> <code>view @ RTDraggableView</code>.</li><li> <code>RTHorizontalDraggableView</code> to make a view horizontally draggable.</li><li> <code>RTVerticalDraggableView</code> to make a view horizontally draggable.</li></ul>
+<p>A number of interactions are available for elements:</p><ul><li> <code>RTDraggable</code> makes an element draggable.</li><li> <code>RTDraggableChildren</code> makes an element draggable. When being dragged, connected elements with an edge are also dragged.</li><li> <code>RTPopup</code> dynamically adds a text to the element pointed by the mouse.</li><li> <code>RTLabelled</code> adds a label above an element. The label may be particularized using <code>text:</code> if the default string representation is not sufficient. Consider:</li></ul><p><figure><pre><code class="smalltalk">	v := RTView new.
+	e := (RTEllipse new size: 30) elementOn: 42.
+	v add: e.
+	e @ (RTLabelled new text: [ :value | 'My value is ', value asString ]).
+	v</code></pre><figcaption></figcaption></figure></p><ul><li> <code>RTShowLabel</code> adds a label on a set of elements when the mouse enters a particular element. <code>RTLabelled</code> is used for the labelling. When the mouse leaves the element, all the labels are removed.</li><li> <code>RTShowEdge</code> adds edges on one particular element when the mouse is above the element. Edges are removed when the mouse leaves the element.</li><li> <code>RTSetEdgeAlpha</code> temporarily decreases the transparency of the incoming and outgoing edges for a given element when the mouse enters the element. When added to an elements, connected edges are made transparent.</li></ul>
+
+<p>Event may be propagated to other elements using <code>RTEventForwarder</code>. This is handy in case objects have to forward some particular actions. Consider the following example
+<figure><pre><code class="smalltalk">	v := RTView new.
+
+	box1 := (RTBox new size: 20) element.
+	box2 := (RTBox new size: 20) elementOn: 'hello'.
+
+	box2 translateBy: 50 @ 0.
+	box2 @ RTDraggable.
+
+	box1 @ RTDraggable.
+	box1 @ (RTEventForwarder new toObject: box2).
+
+	v add: box1.
+	v add: box2.
+	v</code></pre><figcaption></figcaption></figure>
+Dragging the left box forward the dragging events to the right box. Another example of <code>RTEventForwarder</code> is in case elements are above other elements. Consider the following example:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+
+	inner := (RTBox new color: Color green; size: 30) elementOn: 'world'.
+	outter := (RTBox new color: Color blue) elementOn: 'hello'.
+
+	inner @ (RTHighlightable new highlightedColor: Color yellow).
+	outter @ RTPopup.
+	inner @ (RTEventForwarder new toObject: outter).
+
+	v add: outter ; add: inner.
+	RTNest new on: outter nest: { inner }.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>The element <code>inner</code>, located above <code>outter</code>, had an interaction <code>RTHighlightable</code>. Without this interaction, locating the mouse above <code>inner</code> displays the popup for <code>outter</code>. However, since <code>inner</code> has an interaction already, the elements answer events <code>RTMouseLeave</code> and <code>RTMouseEnter</code>. The runtime does not search for elements answering these events which may be located below it. <code>RTEventForwarder</code> is here used to make <code>inner</code> answer the highlighting interaction <em>and</em> triggering the popup of <code>outter</code>.</p>
+<h3>7.  Normalizer</h3>
+<p>Being able to quickly compare data elements is essential in a visualization. <em>Pre-attentive processing</em> refers to the ability of the human brain to uncounsciously accumulate information from the surrounding. Without even realizing what is front of our eyes, the brain filters and processes what is important. This phenomen is particular relevant in data visualization. Our brain is able to immediately spot a different element or a stark color. </p>
+<p>The class <code>RTMetricNormalizer</code> normalizes one or more visual dimensions of a set of Roassal elements. Consider the following example (Figure <a href="#roassalNormalization01">7.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTEllipse new color: Color blue) elementsOn: #(4 5 1 2 3 5).
+	v addAll: es.
+
+	es @ RTPopup.
+
+	RTMetricNormalizer new
+		elements: es;
+		alphaColor: 0.3;
+		normalizeSize: #yourself min: 5 max: 30.
+
+	RTHorizontalLineLayout new alignCenter; on: es.
+
+	es @ RTLabelled.
+
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="roassalNormalization01"></a><figure><img src="figures/roassalNormalization01.png" width="90%"></img><figcaption>7.1. Normalizing element size</figcaption></figure></p>
+<p>The script above creates six elements, each representing one of the values in <code>#(4 5 1 2 3 5)</code>. Elements are then added to the view and a popup interaction is given to each element.</p>
+<p>The class <code>RTMetricNormalizer</code> is then instantiated. Elements to be normalized are set in the metric normalizer using <code>elements:</code>. Elements are first made translucent (note that strictly speaking the message <code>alphaColor:</code> is not a normalization, but rather a convenience). The message <code>normalizeSize:min:max:</code> normalizes the size of each element against the set of elements provided with <code>elements:</code>. </p>
+<p>Similarly, the position along the X-axis may be normalized. Consider the example below (Figure <a href="#roassalNormalization02">7.2</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTEllipse new size: 15; color: Color blue) elementsOn: #(4 5 1 2 3 5).
+	v addAll: es.
+
+	es @ RTPopup.
+
+	RTVerticalLineLayout new alignCenter; on: es.
+
+	RTMetricNormalizer new
+		elements: es;
+		alphaColor: 0.3;
+		normalizeX: #yourself min: 0 max: 30.
+
+	es @ RTLabelled.
+
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="roassalNormalization02"></a><figure><img src="figures/roassalNormalization02.png" width="90%"></img><figcaption>7.2. Normalizing element size</figcaption></figure></p>
+<p>Normalization is essential for graph and histogram charting (cf Chapter on Charter). Consider the script:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new size: 15; color: Color blue) elementsOn: #(4 5 1 2 3 5).
+	v addAll: es.
+
+	es @ RTPopup.
+
+	RTMetricNormalizer new
+		elements: es;
+		alphaColor: 0.3;
+		normalizeHeight: #yourself min: 0 max: 80.
+
+	RTHorizontalLineLayout new alignBottom; on: es.
+
+	es @ RTLabelled.
+
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="roassalNormalization03"></a><figure><img src="figures/roassalNormalization03.png" width="90%"></img><figcaption>7.3. Normalizing element height</figcaption></figure></p>
+<p>You can notice this histogram is not quite right. The bar for the element <code>1</code> is not visible. This is because it has a height of 0. This is expected since the minimum value of the elements model is given 0 pixel (<em>i.e.,</em> the value provided to <code>min:</code>). A proper version of our (primitive) histogram charting needs to specify a minimum and maximum value. Consider (Figure <a href="#roassalNormalization04">7.4</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new size: 15; color: Color blue) elementsOn: #(4 5 1 2 3 5).
+	v addAll: es.
+
+	es @ RTPopup.
+
+	RTMetricNormalizer new
+		elements: es;
+		alphaColor: 0.3;
+		normalizeHeight: #yourself min: 0 max: 80 minValue: 0 maxValue: 5 .
+
+	RTHorizontalLineLayout new alignBottom; on: es.
+
+	es @ RTLabelled.
+
+	v</code></pre><figcaption></figcaption></figure>
+<a name="roassalNormalization04"></a><figure><img src="figures/roassalNormalization04.png" width="90%"></img><figcaption>7.4. Normalizing element height</figcaption></figure></p>
+<p>The message <code>normalizeHeight:min:max:minValue:maxValue:</code> takes as argument a minimum and maximum value. </p>
+
+<h3>8.  Expressing constraints</h3><p class="todo">code below uses the code of Roassal. Change this to a real example.</p>
+<h4>8.1.  Alignment</h4><p>Adequately positioning some elements against other elements is often crucial. 
+It freuently happens that elements need to be resized and positionned against other elements or the windows. The class <code>TRConstraint</code> offers a number of methods (located on the class side) dedicated to constraint the size or the position of some elements.</p>
+<p>Consider the following example (Figure <a href="#alignment">8.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	objects := TRShape withAllSubclasses.
+	v := RTView new.
+	n := RTMultiLinearColorForIdentity new objects: objects.
+	shape := RTBox new color: n; size: #numberOfMethods.
+	es := shape elementsOn: objects.
+	v addAll: es.
+	RTHorizontalLineLayout new gapSize: 0; on: es.
+	TRConstraint alignFromTop: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="alignment"></a><figure><img src="figures/alignment.png" width="90%"></img><figcaption>8.1. Use of alignment</figcaption></figure></p>
+<p>Figure <a href="#alignment">8.1</a> illustrates the different ways to line up elements using the class <code>TRConstraint</code>. Elements can be lined up against their lowest point (<code>alignFromBottom:</code>), against the left-most position (<code>alignFromLeft:</code>), 
+Elements may be lined up against the right-most position using <code>alignFromRight:</code>. You may want to replace <code>RTHorizontalLineLayout</code> by <code>RTVerticalLineLayout</code> to try <code>alignFromLeft:</code> and <code>alignFromRight:</code>.</p>
+<p>Aligment may also be defined against a particular element. The message <code>use:alignFromBottom:</code> and <code>use:alignFromTop:</code> will align the first element the collection of elements provided as the second argument.</p>
+<p>Most of the time, <code>RTGroup</code> are polymorphic to <code>RTElement</code>. This means that you can provide a group of elements where an element is expected. Consider the following example (Figure <a href="#groupAlignment">8.2</a>):
+<figure><pre><code class="smalltalk">	rootClasses := { RTShape . RTLayout . RTBuilder }.
+
+	groups := rootClasses collect: [ :cls |
+		g := RTGroup new.
+		elements := (RTEllipse new size: 8; color: Color blue) elementsOn: cls withAllSubclasses.
+		g addAll: elements.
+		edges := RTEdgeBuilder new
+			view: g;
+			objects: cls withAllSubclasses from: #superclass.
+		RTForceBasedLayout on: elements edges: edges.
+		g ].
+
+	v := RTView new.
+	groups do: [ :aGroup | v addAll: aGroup ].
+	RTHorizontalLineLayout new gapSize: 30; on: groups.
+
+	TRConstraint alignFromBottom: groups.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="groupAlignment"></a><figure><img src="figures/groupAlignment.png" width="90%"></img><figcaption>8.2. Group alignments</figcaption></figure>
+The example above performs a <code>alignFromBottom:</code> on a groups made of element groups. </p>
+<h4>8.2.  Resizing</h4>
+<p>Elements may have their width or height set to the largest dimension from a group of elements. Consider the following code (Figure <a href="#resizingConstraint">8.3</a>):</p>
+<p><figure><pre><code class="smalltalk">	objects := TRShape withAllSubclasses.
+	v := RTView new.
+	n := RTMultiLinearColorForIdentity new objects: objects.
+	shape := RTBox new color: n; size: #numberOfMethods.
+	es := shape elementsOn: objects.
+	v addAll: es.
+	RTHorizontalLineLayout new gapSize: 0; on: es.
+	TRConstraint setAllToMaxHeight: es.
+	TRConstraint alignFromTop: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="resizingConstraint"></a><figure><img src="figures/resizingConstraint.png" width="40%"></img><figcaption>8.3. All elements have the same height</figcaption></figure></p>
+<p>Similarly, <code>setAllToMaxWidth:</code> can be used. You may want to use <code>RTVerticalLineLayout</code> in this example.</p>
+<h4>8.3.  Positioning </h4>
+<p>The class <code>TRConstraint</code> offers several methods (class side) to position elements against other. </p><ul><li> <code>move:above:</code> and <code>move:below:</code> moves a particular elements above or below another element</li><li> <code>move:between:and:</code> and <code>move:between:and:offset:</code> to locate an element between two other elements</li><li> <code>move:onTheLeftOf:</code>, <code>move:onTheRightOf:</code>, <code>move:onTheTopLeftOf:</code>, ... to position a particular element</li></ul>
+<p>Most of the methods contained in the class <code>TRConstraint</code> accepts a group instead of an element as argument. To illustrate this point, consider the following example:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	n := RTMultiLinearColorForIdentity new 
+				numberOfColors: 20; 
+				colors: { Color red . Color gray }.
+	es1 := (RTEllipse new color: n; size: 15) elementsOn: (1 to: 20).
+	v addAll: es1.
+
+	n := RTMultiLinearColorForIdentity new 
+				numberOfColors: 20; 
+				colors: { Color yellow . Color purple }.
+	es2 := (RTEllipse new color: n; size: 15) elementsOn: (1 to: 20).
+	v addAll: es2.
+
+	RTForceBasedLayout on: es1.
+	RTGridLayout on: es2.
+	TRConstraint move: es1 above: es2.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="moveAbove"></a><figure><img src="figures/moveAbove.png" width="25%"></img><figcaption>8.4. Positioning a group above another group</figcaption></figure></p>
+<p>Figure <a href="#moveAbove">8.4</a> depicts the result. Two group of elementns are in play: <code>es1</code> and <code>es2</code>. A force based layout is applied to the first group. A grid layout to the second group. The use of <code>move:above:</code> positions the first group above the second group.</p>
+<h3>9.  Automatically View Refreshing</h3>
+<p>A view may be updated with new elements or modified elements in two different ways: either the view itself decide to refresh its content, or the view receives a signal triggered from a particular objects. </p>
+<p>Consider the following script:</p>
+<p><figure><pre><code class="smalltalk">	c := OrderedCollection new.
+
+	v := RTView new.
+	v canvas addMenu: '+1' callback: [ 
+		c add: 42. 
+		v clean. 
+		v addAll: ((RTBox new size: 8; color: Color blue) elementsOn: c).
+		RTGridLayout on: v elements.
+		v signalUpdate ].
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>Pressing the <em>+1</em> button adds a blue color box. This is a simple solution to automatically add elements. An alternative, could be:</p>
+<p><figure><pre><code class="smalltalk">	c := OrderedCollection new.
+
+	v := RTView new.
+	v canvas addMenu: '+1' callback: [ c add: 42 ].
+
+	RTActiveAnimation new
+		blockToExecute: [ 
+			(v numberOfElements ~~ c size) ifTrue: 
+				[ v clean. 
+				  v addAll: ((RTBox new size: 8; color: Color blue) elementsOn: c).
+				  RTGridLayout on: v elements.
+				   ] ];
+		inView: v.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>This code has the same effect. There is a subtil and important difference between these two code snippets. The second one, check the size of the <code>c</code> collection at each screen refresh. No need to care about sending <code>#signalUpdate</code>. </p>
+<h3>10.  Visualizing a Domain </h3>
+<p>Roassal promotes a clear separation between the domain to be represented, and the visual representation. We refer to <em>domain</em> the input of the visualization, or, in a general sense, the objects you do care about. The domain should not be aware of the visualization. Whether your objects are visualized or not should not matter for these objects.  </p>
+<p class="todo">give example</p>
+<p>Roassal is built on a solid base. From a software engineering point of view, it is largely recognized about the benefits to separate a domain from a visualization: modularity, source code reduction, easiness for testing.</p>
+
+<h3>11.  Code Snippets</h3><p>This section contains a number of executable code snippets that illustrate various aspects of Roassal.</p>
+<h4>11.1.  Edges with invisible extremities</h4><p><figure><pre><code class="smalltalk">	v := RTView new.
+	edges := OrderedCollection new.
+
+	es := RTBox elementsOn: (1 to: 300).
+	RTGridLayout new gapSize: 30; on: es.
+
+	es do: [ :e |
+		| te |
+		te := RTBox element.
+		te translateTo: e position + (0 @ 10).
+		edges add: ((RTArrow new color: Color black) edgeFrom: e to: te).
+	].
+
+	v addAll: edges.
+
+	v when: TRMouseMove do: [ :evt |  
+		edges do: [ :edge |
+			edge to 
+				translateTo: (evt position - edge from position) / 10 + edge from position.
+		].
+		v signalUpdate.
+	].
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="nesting02"></a><figure><img src="figures/invisibleExtremities.png" width="35%"></img><figcaption>11.1. Invisible extremities</figcaption></figure></p>
+
+<h4>11.2.  Dynamically adding elements</h4><p><figure><pre><code class="smalltalk">	v := RTView new.
+	v @ RTDraggableView.
+	stepping := RTSpringLayoutStepping new view: v.
+	stepping after: [ v canvas camera focusOnCenter ].
+	v addAnimation: stepping.
+
+	v canvas addMenu: 'Add circle' callback: [ 
+		| el |
+		el := (RTEllipse new size: 20; color: (Color blue alpha: 0.4)) element.
+		el @ RTDraggable.
+		el translateTo: 5 atRandom @ 5 atRandom.
+		v add: el.
+		stepping addNode: el.
+		v signalUpdate.
+	].
+
+	v canvas addMenu: 'Add connected circle' callback: [ 
+		| el edge |
+		el := (RTEllipse new size: 20; color: (Color blue alpha: 0.4)) element.
+		el @ RTDraggable.
+		el translateTo: 5 atRandom @ 5 atRandom.
+		v add: el.
+
+		edge := RTLine edgeFrom: el to: v elements atRandom.
+		v add: edge.
+
+		stepping addNode: el; addEdge: edge.
+		v signalUpdate.
+	].
+	v </code></pre><figcaption></figcaption></figure></p>
+<p><a name="dynamicElements"></a><figure><img src="figures/dynamicElements.png" width="35%"></img><figcaption>11.2. Dynamically adding elements</figcaption></figure></p>
+<h4>11.3.  Orthogonal lines</h4><p><figure><pre><code class="smalltalk">	v := RTView new.
+
+	v addAll: ((RTEllipse new size: 20; color: (Color red alpha: 0.3)) elementsOn: (1 to: 20)).
+
+	shape := RTMultiLine new.
+	shape orthoVertical.
+	shape color: (Color blue alpha: 0.3).
+
+	RTEdge 
+		buildEdgesFromObjects: (1 to: 20) 
+		from: [ :n | n // 3 ] 
+		to: #yourself 
+		using: shape 
+		inView: v.
+
+	v elements @ RTDraggable @ RTPopup.
+	
+	RTTreeLayout on: v elements. 
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="orthogonalEdges"></a><figure><img src="figures/orthogonalEdges.png" width="40%"></img><figcaption>11.3. Orthogonal edges</figcaption></figure></p>
+
+
+
+<h4>11.4.  Dynamically adding edges</h4><p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new color: (Color blue alpha: 0.4)) 
+			elementsOn: (RTShape withAllSubclasses).
+	v addAll: es.
+
+	RTNest new
+		for: es add: [ :group :model | 
+			group addAll: (RTBox new elementsOn: model methods).
+			RTGridLayout on: group ].
+	
+	es @ (RTShowEdge new 
+				connectTo: #dependentClasses; 
+				shape: (RTLine new color: Color red);
+				yourself).
+	es @ (RTShowLabel new 
+				color: Color red;
+				highlight: #dependentClasses; top; yourself).
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="addingEdges"></a><figure><img src="figures/addingEdges.png" width="55%"></img><figcaption>11.4. Dynamically adding edges</figcaption></figure></p>
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

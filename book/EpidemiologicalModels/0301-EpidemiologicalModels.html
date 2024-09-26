@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Expressing Epidemiological Models</h2>
+<p>Understanding how infectious diseases propagate is a key challenge for the 21st century.
+Mathematical modeling is a powerful tool for studying complex systems that are commonly used in many scientific disciplines.
+It is widely used to model infectious diseases in order to study the mechanisms of transmission, explore characteristics of epidemics, predict the future course of an outbreak and evaluate strategies to find a best control-program like quarantine.
+The first mathematical model of epidemiology was proposed by Daniel Bernoulli in 1766 to defend the practice of inoculation against smallpox.
+The major contribution to modern mathematical epidemiology was carried out by Kermack and McKendrick who formulated a compartmental model based on relatively simple assumptions on the rates of flow between different classes categorized by epidemiological status.</p>
+<p>Kendrick is an embedded domain-specific language in Pharo for defining mathematical models of epidemiology.
+This chapter analyzes and visualizes the spatiotemporal evolution of epidemiological models using Roassal.</p>
+<p>This chapter was written with the participation of Bui Thi Mai Anh (<a href="mailto:maianht2@gmail.com">maianht2@gmail.com</a>), Serge Stinckwich (<a href="mailto:serge.stinckwich@ird.fr">serge.stinckwich@ird.fr</a>), and Nick Papoulias (<a href="mailto:npapoylias@gmail.com">npapoylias@gmail.com</a>).</p>
+<h3>1.  Compartmental models of epidemiology</h3>
+<p>The targeted models of the <strong>Kendrick</strong> language are the SIR or SEIR compartmental model in which each individual goes through three distinct phases:</p><ul><li> First an individual is considered to be <em>Susceptible</em> to pathogens (status S),</li><li> Once infected, the individual is <em>Infectious</em> (status I) and spreads the infection,</li><li> After <em>Recovery</em> (status R), the individual is immunized and cannot become infected again.</li></ul>
+<p>The transition of status between compartments is represented mathematically as derivatives of compartment size with respect to time.</p>
+<p>At the moment, <strong>Kendrick</strong> supports for the mathematical models of epidemiology based on ordinary differential equations (<strong>ODEs</strong>).
+The system of ODEs followed represents the SIR classic model of epidemiology (see figure <a href="#equation1">1.1</a>).</p>
+<p><a name="equation1"></a><figure><img src="figures/equation1.png" width="35%"></img><figcaption>1.1. Mathematical description of SIR model using ODEs</figcaption></figure></p>
+<p>These models are specified using the Kendrick domain-specific language and modeled using the simulation modules integrated into Kendrick platform.
+The simulator takes a Kendrick model (<em>i.e.,</em> an epidemiological model written in the Kendrick language) and performs a simulation algorithm and outputs the result showing the spatial and temporal evolution dynamics of each compartment.
+Roassal visualizes the result.</p>
+<p>The simulation module supports three modeling formalisms: deterministic, stochastic and individual-based (also called agent-based).
+The modelers can switch between the simulation modes by indicating the algorithm used.</p>
+<p>The deterministic simulation resolves the ODEs system of the model and produces numerical results.
+Kendrick uses deterministic solvers implemented in the package PolyMath, including RungeKutta and Euler.
+These solving methods are used to find numerical approximations to the solutions of ODEs.
+The results are always the same for all simulations under the predefined model parameters and initial conditions (initial values of compartments).
+Therefore, deterministic models reflect the average dynamics of the disease.</p>
+<p>While deterministic models provide insights into the endemic equilibrium and its stability, shifting to stochastic models is known to be more realistic in unrderstanding and predicting the dynamics of diseases.
+Kendrick currently supports some Simulation Stochastic Algorithms (SSA) of Gillespie -  converting the ODEs system of the model to stochastic events. After each time step, an event is randomly choosen to be executed.
+Kendrick allows one to increase the model accuracy using an individual-based simulator.
+Every individual of the population is examined at each time step and each individual has the probability of changing its current status.</p>
+<p>The numerical results produced by simulations can be displayed graphically by using visualization modules of Kendrick.
+Such modules are implemented based on some features of Roassal.</p>
+<p>There are three kinds of visualizations: diagrams (using <code>RTGrapher</code> of Roassal), maps (using <code>RTMapBuilder</code>) and networks (using <code>RTMondrian</code>).</p>
+<h3>2.  Visualizing Ebola epidemic outbreak from data</h3>
+<p>The website <a href="https://github.com/cmrivers/ebola">https://github.com/cmrivers/ebola</a> provides data that represents the 2014 Ebola outbreak in West African countries.
+The following script visualizes data for Guinea and Liberia (Figure <a href="#kendrickEbola01">2.1</a>):
+<figure><pre><code class="smalltalk">	tab := RTTabTable new input: (ZnEasy get: 
+'https://raw.githubusercontent.com/cmrivers/ebola/master/country_timeseries.csv')
+	contents usingDelimiter: $,.
+tab removeFirstRow.
+tab replaceEmptyValuesWith: '0' inColumns: (2 to: 12) asArray.
+tab convertColumnsAsInteger: (2 to: 12) asArray.
+tab convertColumnAsDateAndTime: 1.
+tab replaceZeroWithCumulativeValuesInColumns: (2 to: 12) asArray.
+data := tab values reversed.
+
+minValue := data minValue: [ :aData | aData first julianDayNumber ].
+
+b := RTGrapher new.
+b extent: 400@200.
+ds := RTData new.
+ds noDot.
+ds connectColor: Color blue.
+ds points: data.
+ds y: [ :v | v at: 3 ].
+ds x: [ :v | v first julianDayNumber - minValue ].
+b add: ds.
+
+ds := RTData new.
+ds noDot.
+ds connectColor: Color green.
+ds points: data.
+ds y: [ :v | v at: 4 ].
+ds x: [ :v | v first julianDayNumber - minValue ].
+b add: ds.
+
+b axisX
+	labelRotation: -30;
+	labelConversion: [ :v | (Date julianDayNumber: v + minValue) ].
+b build.
+
+lb := RTLegendBuilder new.
+lb view: b view.
+lb addText: 'Ebola cases'.
+lb addColor: Color blue text: 'Guinea'.
+lb addColor: Color green text: 'Liberia'.
+lb build.
+b view</code></pre><figcaption></figcaption></figure></p>
+<p><a name="kendrickEbola01"></a><figure><img src="figures/ebolaCases.png" width="70%"></img><figcaption>2.1. Visualizing Ebola cases in two African countries</figcaption></figure></p>
+<h3>3.  Loading Kendrick</h3>
+<p>Kendrick is loadable using a Roassal plugin (Figure <a href="#loadingKendrick">3.1</a>):</p>
+<p><a name="loadingKendrick"></a><figure><img src="figures/loadingKendrick.png" width="50%"></img><figcaption>3.1. Loading Kendrick</figcaption></figure></p>
+<h3>4.  Measles model</h3>
+<p>Measles is a well-known childhood infectious disease. The most appropriate model representing measles epidemics is the SEIR model where individuals are categorized to be in four classes: first, all newborn individuals are assumed to be in the <em>Susceptible</em> (S) class at birth rate <i>mu</i>, then enter in <em>Exposed</em> (E) class who are infected but not yet infectious with transmission rate , then become <em>Infectious</em> (I) after a latent period given by <i>sigma</i>, and finally change to <em>Recovery</em> after an infectious period <i>gamma</i>. The parameter <em>N</em> represents the total size of the population.
+In this example, the diagrams will be used to visualize the dynamics of the infectious disease.
+The following script illustrates the SEIR model of measles (Figure <a href="#measles">4.1</a>):
+<figure><pre><code class="smalltalk">	model := KEModel new population: (KEPopulation size: 100000).
+	model addAttribute: #status value: #(S E I R).
+	model atCompartment: { #status-&gt;#S } put: 99999 atOthersPut: 0.
+	model atCompartment: { #status-&gt;#I } put: 1.
+	model addEquations: {
+	            'S:t=mu*N - beta*S*I - mu*S'.
+	            'E:t=beta*S*I - sigma*E - mu*E'.
+	            'I:t=sigma*E - gamma*I - mu*I'.
+	            'R:t=gamma*I - mu*R'
+	            }.
+	model addParameters: {
+	        #beta-&gt;0.0000214.
+	        #gamma-&gt;0.143.
+	        #mu-&gt;0.0000351.
+	        #sigma-&gt;0.125 }.
+	simulator := KESimulator new: #RungeKutta from: 0.0 to: 150 step: 1.
+	simulator executeOn: model.
+	diag := (KEDiagramBuilder new) data: simulator allTimeSeries.
+	diag xLabel: 'Time (days)'.
+	diag open</code></pre><figcaption></figcaption></figure>
+The rates mentioned of the model are introduced as parameters.
+This model is run in deterministic simulation in a period of 150 days (using the classical Runge–Kutta method, also known as RK4) with an initial population of 100000 individuals.
+Figure <a href="#measles">4.1</a> shows the temporal dynamics of all compartments S, E, I and R.
+The Y axis counts the number of individuals in each class and the X axis is the time period of simulation (in days).</p>
+<p><a name="measles"></a><figure><img src="figures/measlesKendrick.png"></img><figcaption>4.1. Modeling the Measles model with Kendrick</figcaption></figure></p>
+<p>The figure shows that after about 37 days, the endemic reaches the peak, then the number of infectious reduces, and finally the number of recovered individuals increases.</p>
+<h3>5.  Complex models in Kendrick</h3>
+<p>The modeling of infectious disease involves not only the study of their transmission cycle (as shown in the previous example) but also the effects of the population heterogeneities due to age intervals, sexes, species, viral strains or spatial regions etc.
+We consider such heterogeneities as concerns of epidemiology.
+The Kendrick DSL allows one to construct a model as a composition of modular models that describe specific epidemiological concerns.
+Each concern is separately defined and then integrated into the model.
+Look at the following examples.</p>
+<h3>6.  Example of multi-host model</h3>
+<p>In many situations, due to the fact that the primary hosts do not interact directly to transmit infection, the spreading of diseases requires a secondary host (vector-borne diseases).
+In this example, we investigate the mosquito-borne disease with two sources.
+Here, the matrix of transmission  indicates that the disease is only transmitted between mosquitos and two reservoirs, so that the main diagonal of this matrix is zero.
+A reservoir is the long-term host of a pathogen of an infectious disease. Example of natural reservoirs for pathogens are: rats or bats.
+This disease is mathematically formulated as shown in figure <a href="#equation2">6.1</a>.</p>
+<p><a name="equation2"></a><figure><img src="figures/equation2.png" width="50%"></img><figcaption>6.1. Mathematical description of the multi-hosts model using ODEs</figcaption></figure></p>
+<p>We specify the multi-host aspect of epidemiology as a concern (called multi-host concern) and then apply it to the model.</p>
+<p>The Kendrick model of this disease is specified as follows:
+<figure><pre><code class="smalltalk">	multiHostConcern := KEConcern new.
+	multiHostConcern
+		addAttribute: #species
+		value: #(#mosquito #reservoir1 #reservoir2).
+
+	model := KEModel new.
+	model population: (KEPopulation size: 13000).
+	model addAttribute: #status value: #(#S #I #R).
+	model addParameters: {
+			#beta -&gt; 1.
+			#gamma -&gt; 52.
+			#mu -&gt; 12.17.
+	}.
+	model addParameter: #lambda value: 'beta*I'.
+	model addEquations: {
+		'S:t=mu*N - lambda*S - mu*S'.
+		'I:t=lambda*S - gamma*I - mu*I'.
+		'R:t=gamma*I - mu*R'
+	}.
+
+	model integrate: multiHostConcern.
+
+	model
+		atParameter: #mu
+		assignValue:
+		[ :aModel| |c val|
+			c := aModel currentCompartment at: #species.
+			c = #mosquito ifTrue: [ val := 12.17 ].
+			c = #reservoir1 ifTrue: [ val := 0.05 ].
+			c = #reservoir2 ifTrue: [ val := 0.05 ].
+			val
+		].
+	model
+		atParameter: #N
+		assignValue:
+		[ :aModel| |c|
+			c := aModel currentCompartment at: #species.
+			aModel sizeOfPopulation: c
+		].
+	model
+		atParameter: #beta
+		assignValue:
+		[ :aModel| |c val|
+			c := aModel currentCompartment at: #species.
+			c = #mosquito ifTrue: [ val := #(0 0.02 0.02) ].
+			c = #reservoir1 ifTrue: [ val := #(0.02 0 0) ].
+			c = #reservoir2 ifTrue: [ val := #(0.02 0 0) ].
+			val
+		].
+	model
+		atParameter: #lambda
+		assignValue:
+		[ :aModel|
+			((aModel atParameter: #beta) *
+			(aModel atCompartment: {#status-&gt;#I})) sum
+		].
+
+	model atCompartment: { #status-&gt;#S. #species-&gt;#mosquito } put: 9999.
+	model atCompartment: { #status-&gt;#I. #species-&gt;#mosquito } put: 1.
+	model atCompartment: { #status-&gt;#S. #species-&gt;#reservoir1 } put: 1000.
+	model atCompartment: { #status-&gt;#S. #species-&gt;#reservoir2 } put: 2000.
+
+	simulator := KESimulator new: #Gillespie from: 0.0 to: 0.5 step: 0.0027.
+	simulator executeOn: model.
+	db := (KEDiagramBuilder new) data: ((simulator timeSeriesAt: '{#status: #I}') sqrt).
+	db xLabel: 'Time (year)'.
+	db yLabel: 'sqrt(Infectious)'.
+	db open</code></pre><figcaption></figcaption></figure></p>
+<p>In this example, we specify the multi-host concern separately from the SIR model.
+This concern contains no parameters. Its attribute <em>species</em> contains three values for mosquito, reservoir1, reservoir2.
+When integrating this concern to the SIR model, the population is further decomposed in 3x3 compartments.
+Because of the heterogeneities caused by the multi-host concern,
+parameters of SIR model such as <i>beta</i>, <i>mu</i>, <i>lambda</i>, N (N by default is the size of the population) become heterogeneous.
+For example, according to the species, the parameter <i>mu</i> may have different values (12.17 for mosquito, 0.05 for reservoir1 and reservoir2).
+Such parameters will be re-defined as shown in the script (by re-assigning values).</p>
+<p>In this example, we demonstrate the use of stochastic simulation (by indicating the used algorithm as #Gillespie).
+The temporal evolution of this disease is shown in the Figure <a href="#mosquito">6.2</a>.
+The diagram illustrates the dynamics of the infectious compartment for each species.
+The Y-axis is squared for readability.</p>
+<p><a name="mosquito"></a><figure><img src="figures/mosquitoKendrick.png"></img><figcaption>6.2. Modeling Mosquito-borne model with Kendrick</figcaption></figure></p>
+<h3>7.  An example of Ebola spatial model with Kendrick</h3>
+<p>This example is used for demonstrating the map visualization of Kendrick.
+We will study how a spatial concern is defined with Kendrick.</p>
+<p>The example below describes the Ebola model in six countries of Africa.
+Due to the characteristic of the Ebola epidemic, the infection transmission only occurs via direct contact between the Susceptibles and an Infectious.
+Hence, we consider that the spatial affects the transmission of infection by the migration of infectious individuals from a country to another country.</p>
+<p>In this example, we specify two concerns separately: the spatial concern and the SIR concern, then apply them to the model.
+The script of the model is below:</p>
+<p><figure><pre><code class="smalltalk">model := KEModel new population: (KEPopulation size: 6000).
+
+map := KEMap new.
+map countries: #(#Liberia #Guinea #SierraLeone #Nigeria #Senegal #Niger).
+map routesFrom: #Liberia toAll: #(#Guinea).
+map routesFrom: #Guinea toAll: #(#SierraLeone).
+map routesFrom: #SierraLeone toAll: #(#Nigeria).
+map routesFrom: #Nigeria toAll: #(#Senegal).
+map routesFrom: #Senegal toAll: #(#Niger).
+map routesFrom: #Niger toAll: #(Liberia).
+spatialConcern := KEConcern new.
+spatialConcern addAttribute: #country value: map countries.
+spatialConcern addParameter: #rho value: 0.05.
+spatialConcern transitions: (map routesToTransitions: 'rho').
+
+sirConcern := KEConcern new.
+sirConcern addAttribute: #status value: #(S I R).
+sirConcern addParameters: #(#lambda #beta #gamma).
+sirConcern
+	addTransitionFrom: { #status-&gt;#S }
+	to: { #status-&gt;#I }
+	probability: 'lambda'.
+sirConcern
+	addTransitionFrom: { #status-&gt;#I }
+	to: { #status-&gt;#R }
+	probability: 'gamma'.
+
+model integrate: sirConcern.
+model integrate: spatialConcern.
+
+model
+	atParameter: #beta
+	assignValue: 0.0002.
+model
+	atParameter: #gamma
+	assignValue: 0.1.
+model
+	atParameter: #lambda
+	assignValue:
+	[ :aModel| |c|
+		c := aModel currentCompartment at: #country.
+		(aModel atParameter: #beta)*(aModel atCompartment: {#status-&gt;#I. #country-&gt;c}) ].
+
+#(#Guinea #SierraLeone #Nigeria #Senegal #Niger) do: [ :c|
+	(model atCompartment: { #status-&gt;#S. #country-&gt;c } put: 1000)
+].
+model atCompartment: { #status-&gt;#S. #country-&gt;#Liberia } put: 950.
+model atCompartment: { #status-&gt;#I. #country-&gt;#Liberia } put: 50.
+
+simulator := KESimulator new: #IBM from: 0 to: 100 step: 0.1.
+simulator executeOn: model.
+
+mapBuilder := KEMapBuilder africa.
+mapBuilder
+	data:
+	(mapBuilder countries collect: [:c|
+		((model atAttribute: #country) includes: c)
+		ifTrue: [
+			(simulator timeSeriesAt: {#status-&gt;#I. #country-&gt;c}) first peakOfEpidemic ]
+		ifFalse: [ 0 ]
+	]).
+mapBuilder open.
+diagBuilder := KEDiagramBuilder new data: (simulator timeSeriesAt: {#status-&gt;#I}).
+diagBuilder open.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="EpidemiologicalAfrica2"></a><figure><img src="figures/EpidemiologicalAfrica2.png" width="90%"></img><figcaption>7.1. Representing the Ebola disease with Kendrick in 6 countries of Africa</figcaption></figure></p>
+<p>Figure <a href="#EpidemiologicalAfrica2">7.1</a> represents the results of the individual-based simulation on six countries.
+The left hand diagram shows the evolution dynamics during 100 days. The right hand graph visualizes six countries in Africa, the color of each one depends on its infection degree.</p>
+<h3>8.  Network Visualization of Epidemiological Models</h3>
+<p>In all examples above, individuals of the population are assumed to mix randomly and uniformly.
+Each individual therefore has an equal probability to have contact with all other individuals.
+But in fact, the number of contacts an individual has is considerably smaller than the size of the population.
+The network model supposes a network of contacts between individuals of the population.
+It assigns to each individual a finite set of contacts.
+Thus, the probability of infection of a susceptible individual depends on the number of infectious contacts he or she has.</p>
+<p>Models that incorporate network structure of epidemiology are captured by Kendrick as a spatial concern.
+The network is represented through graphs in which a node represents an individual (or a set of individuals having the same contacts)
+and an edge between two nodes represents an interaction that may allow disease transmission (contact).
+Constructing a real contact network required knowledge of every individual in a population and every disease-causing contact between them.
+This is typically unfeasible for even small populations. Thus people often work with approximate networks, particularly computer-generated networks.
+Kendrick supports some computer-generated networks that have been investigated in the domain of epidemiology including the Poisson random network, small-world network, and scale-free network.</p>
+<p>The visualization of network in Kendrick is done by the network builder module.
+The example below represents a random network of a population of 100 individuals.
+Each node of the network corresponds to an individual of the population.
+The model is run as an individual-based simulation.</p>
+<p><figure><pre><code class="smalltalk">model := KEModel new population: (KEPopulation size: 100).
+
+sirConcern := KEConcern new.
+sirConcern addAttribute: #status value: #(S I R).
+sirConcern addParameters: { #beta. #gamma. #lambda }.
+sirConcern
+	addTransitionFrom: { #status-&gt;#S }
+	to: { #status-&gt;#I }
+	probability: 'lambda'.
+sirConcern
+	addTransitionFrom: { #status-&gt;#I }
+	to: { #status-&gt;#R }
+	probability: 'gamma'.
+
+network := KEContactNetwork nodes: 100 topology: { #random. #p-&gt;0.02 }.
+spatialConcern := KEConcern new.
+spatialConcern addParameter: #network value: network.
+spatialConcern addAttribute: #node value: network allContacts.
+
+model integrate: sirConcern.
+model integrate: spatialConcern.
+
+model
+	atParameter: #lambda
+	assignValue:
+	[ :aModel||node|
+		node := aModel currentCompartment at: #node.
+		((aModel atParameter: #network)
+			contactsOf: {aModel. #node-&gt;node. #status-&gt;#I})
+		* (aModel atParameter: #beta)/(aModel atParameter: #N)
+ ].
+model atParameter: #beta assignValue: 100.
+model atParameter: #gamma assignValue: 0.1.
+
+1 to: 99 do: [:i|
+	model atCompartment: {#status-&gt;#S. #node-&gt;i asString asSymbol} put: 1].
+model atCompartment: { #status-&gt;#I. #node-&gt;#'100' } put: 1.
+
+simulator := KESimulator new: #IBM from: 0.0 to: 50 step: 0.1.
+simulator executeOn: model.
+nb := KENetworkBuilder new
+		data: simulator allTimeSeries;
+		network: (model atParameter: #network);
+		status: #(#S #I #R);
+		colors: #(#green #red #blue);
+		viewDataAtTime: 10;
+		legend: 'random network, p = 0.02'.
+nb open</code></pre><figcaption></figcaption></figure></p>
+<p>We visualize the network of contacts after 10 days.
+The random network is characterized by the probability of having an edge between two random nodes (the argument p).
+The random network represents the contacts between individuals of the model and can be seen in Figure <a href="#randomNetwork">8.1</a>.</p>
+<p><a name="randomNetwork"></a><figure><img src="figures/randomNetwork.png"></img><figcaption>8.1. Visualizing a random network population with Kendrick</figcaption></figure></p>
+<p>We may change the topology of the network to examine the effects of other kind networks.
+For example, defining a scale-free network of 100 nodes with the first number of edges is m0:</p>
+<p><figure><pre><code class="smalltalk">	network := KEContactNetwork nodes: 100 topology: { #scalefree. #m0-&gt;1 }.</code></pre><figcaption></figcaption></figure>
+The scale free network of the model after 10 days can be seen in Figure <a href="#scalefreeNetwork">8.2</a>.</p>
+<p><a name="scalefreeNetwork"></a><figure><img src="figures/scalefreeNetwork.png"></img><figcaption>8.2. Visualizing a scale-free network population with Kendrick</figcaption></figure></p>
+<p>As can be seen on these figures, the random network shows a lack of clustering because each two random nodes have the same probability to make an edge.
+In the scale-free network, some individuals may have many more contacts than others.
+The smallworld network is formed from a lattice grid with some rewire nodes.
+This network is defined below:
+<figure><pre><code class="smalltalk">	network := KEContactNetwork nodes: 100 topology: { #smallworld. #K-&gt;2. #beta-&gt;0 }.</code></pre><figcaption></figcaption></figure></p>
+<p>Beta is the probability to rewire an edge in the network; K is the number of contacts on two sides of a node.
+By making K = 2 and beta = 0, we can create a much simpler model like the ring network as shown in Figure <a href="#smallworldNetwork">8.3</a>.
+Such kinds of networks are often studied in the context of epidemiology to show the social contacts between individuals (i.e, in the case of sexually transmitted diseases).</p>
+<p><a name="smallworldNetwork"></a><figure><img src="figures/smallworldNetwork.png"></img><figcaption>8.3. Visualizing a small-world network population with Kendrick</figcaption></figure></p>
+<p>As mentioned above, a node of a contact network may represent a group of individuals with some contact between one another. In such cases, in a node, an individual is supposed to contact all others of the same node.
+The probability of infection of a susceptible depends on the number of infectious contacts within its node and in other linked nodes.</p>
+<p>The example below represents a contact network of 10 nodes defined on a population of 1,000 individuals.
+The visualization of the network can be seen in Figure <a href="#metaNodeNetwork">8.4</a>.
+We showed the infectious prevalence of each node (as the size of nodes).</p>
+<p><figure><pre><code class="smalltalk">model := KEModel new population: (KEPopulation size: 1000).
+
+sirConcern := KEConcern new.
+sirConcern addAttribute: #status value: #(S I R).
+sirConcern addParameters: { #beta. #gamma. #lambda }.
+sirConcern
+	addTransitionFrom: { #status-&gt;#S }
+	to: { #status-&gt;#I }
+	probability: 'lambda'.
+sirConcern
+	addTransitionFrom: { #status-&gt;#I }
+	to: { #status-&gt;#R }
+	probability: 'gamma'.
+
+spatialConcern := KEConcern new.
+network := KEContactNetwork nodes: 10 topology: { #random. #p-&gt;0.2 }.
+spatialConcern addParameter: #network value: network.
+spatialConcern addAttribute: #node value: network allContacts.
+
+model integrate: sirConcern.
+model integrate: spatialConcern.
+
+model
+	atParameter: #lambda
+	assignValue:
+	[ :aModel||node|
+		node := aModel currentCompartment at: #node.
+		((aModel atParameter: #network)
+			contactsOf: {aModel. #node-&gt;node. #status-&gt;#I})
+		* (aModel atParameter: #beta)/(aModel atParameter: #N)
+ ].
+model atParameter: #beta assignValue: 1.
+model atParameter: #gamma assignValue: 0.1.
+
+2 to: 10 do: [:i|
+	model atCompartment: {#status-&gt;#S. #node-&gt;i asString asSymbol} put: 100].
+model atCompartment: { #status-&gt;#I. #node-&gt;#'1' } put: 1.
+model atCompartment: { #status-&gt;#S. #node-&gt;#'1' } put: 99.
+
+simulator := KESimulator new: #IBM from: 0.0 to: 100 step: 0.1.
+simulator executeOn: model.
+nb := KENetworkBuilder new
+		data: simulator allTimeSeries;
+		network: (model atParameter: #network);
+		status: #(I); viewDataAtTime: 30.
+nb open</code></pre><figcaption></figcaption></figure></p>
+<p><a name="metaNodeNetwork"></a><figure><img src="figures/metaNodeNetwork.png" width="50%"></img><figcaption>8.4.  Visualizing a network contact model between groups of individuals with Kendrick</figcaption></figure></p>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

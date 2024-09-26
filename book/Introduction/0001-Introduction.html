@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Introduction</h2>
+<p>Computers plays a formidable extension of the human brain: a computer liberates us from performing boring and repetitive tasks. Data visualization is a wonderful field where computers nicely complements what the brain excels at. </p>
+<p>Conveying information through interactive visualizations is both an art and a sophisticated engineering process. When crafting a visualization, many decisions have to be taken based on a personal intuition or a carefully evaluated design aspect. Begin able to quickly experiment a new idea is key in. Agile Visualization is about leveraging creativity by reducing the cost associated to data and software visualization. </p>
+<p>Challenges in data visualization does not actually involve visualizing data. There are numerous books and software libraries for that purpose. The challenge is in crafting a visualization that is easily reusable, composable, and extensible. 
+Agile Visualization addresses the need to easily reuse visualizations and desire for many to reuse visualizations with their own data. </p>
+<p>Roassal is a visualization engine, written in the Pharo and VisualWorks programming languages. All the examples provided in this book are therefore made for Roassal and are written in the Pharo programming language.</p>
+<p>Since there is no better way than programming to craft a visualization, readers are expected to have some programming experience to fully enjoy Agile Visualization. This book is written for a large audience.</p>
+
+
+
+<h3>1.  Agile Visualization</h3>
+<p>Agile Visualization promotes the creation of a visualization based on very short incremental steps. By &quot;short&quot; we mean a couple of seconds or minutes. A data analysis is carried out by building a number of visualizations, from which many are simply a try or have a very short usage time period. Reducing the creation time of a visualization to a few seconds or minutes greatly increases the number of different paths taken by a data scientist to solve a given problem. </p>
+<p>A painter throws colors on a canvas as part of its activity. Colors may be mixed, removed, and added at will. This metaphor may be considered as the guiding line of Agile Visualization. Similarly to Agile Programming, feedback should always occur a short time after the inception of a visualization.</p>
+<h3>2.  The Roassal visualization engine</h3>
+<p>Roassal is a visualization engine developed in Pharo. Roassal is also available for VisualWorks and is distributed under the MIT License. </p>
+<p>Although Roassal regularly receives contributions from all over the world, the effort behind Roassal is leaded at the University of Chile and at Object Profile. </p>
+<p>Roassal is developed and maintained in Pharo. Roassal is heavily maintained on the VisualWorks platform. Roassal runs also on BeeSmalltalk. The book is mostly written using Pharo: examples and screenshots are made on Pharo. VisualWorks developers will have to manually adapt the examples and instructions.</p>
+<h3>3.  Online and free version of this book</h3>
+<p>The website <a href="http://AgileVisualization.com">http://AgileVisualization.com</a> contains a free version of the book. An HTML version of each chapter is provided. Buying a physical copy of Agile Visualization helps facing the cost involving in maintaining Roassal and Agile Visualization.</p>
+
+<h3>4.  The Roassal community</h3><p>As with any successful open source project, Roassal is driven by an active community effort. The positive aspect of this is that Roassal is evolving every day (literally). The negative aspect is that documentation becomes obsolete as soon as it is published.  The book has been written in such a way that deep technical aspects are not discussed while general concepts are presented in depth. The reason is that concepts are stable over time.</p>
+<p>In case you wish to discuss some aspect of Roassal, need help, or simply have a friendly chat, there is a number of ways to get in touch with us:</p><ul><li> The moose mailing list. <code>http://moosetechnology.org</code> is the website of the Moose analysis platform. Details about how to join the Moose-Dev mailing list are provided, in the <em>community</em> section. The community is friendly, open-minded, and happy to help. </li><li> <code>hello@agilevisualization.com</code> is directed to the main developers of Roassal. </li><li> The Roassal team is also available from the channel <code>#Roassal</code> on the Slack messaging. Information on joining the channel is available on <code>http://pharo.org/community</code>.</li><li> <code>https://www.facebook.com/ObjectProfile</code> contains many examples of works carried out with Roassal. </li><li> The Object profile Tweet account <code>@ObjectProfile</code> is also a great way to share projects.</li></ul>
+<h3>5.  Other visualization platforms </h3><p>Although Roassal, Pharo, and Moose are heavily promoted in this book, our goal is not to make you switch language or visualization API. You probably have a good reason for using what you are currently using. In case you are seeking a fresh experience for visualizing and programming, then we cannot recommend more this tool trilogy more.</p>
+<p>The data visualization community has produced many visualization engines. D3js, RaphaelJS, Processing, Flare are popular visualization frameworks supported by a large community. Agile Visualization presents a compelling use of visualizations in many different situations. We believe that even if you are not a Roassal user, Agile Visualization will remain beneficial.</p>
+
+<h3>6.  If you do not know Pharo</h3><p>Pharo is easy to learn and use. It comes with fantastic programming tools to make you intimately interact with <em>objects</em>; an object being an elementary computational unit. Our advice is to resist the natural tendency to map your knowledge from Java or PHP into Pharo.</p>
+<h3>7.  If you are already a Pharo/Smalltalk programmer</h3>
+<p>If you are a Pharo programmer with some graphical API knowledge, then you may want to work with the core of Roassal (Part I). Once you understand the basic functionalities of Roassal, we invite you to read more about the builder infrastructure (Part II). Builder enables fantastic scripting and visualization composition not seen anywhere else!</p>
+<p>One last piece of advice before beginning your journey: do no try to build any complex visualization in Roassal without first reading the builder infrastructure. Builders may ease your life!</p>
+
+
+
+
+
+
+
+<h3>8.  Improving the book and Roassal</h3>
+<p>This book is the result of many long discussions, compromise, and collaborative efforts. Roassal and Agile Visualization are evolving fast and will continue to do so.
+There is many ways you, the reader, can help us improve the book. Here are a list of actions one can take to contribute to this global effort:</p><ul><li> Let us know about your project. We will make sure that adequate advertisement will be made. All projects, ranging from a student effort to an industrial case study, are relevant. </li><li> As any piece of software, Roassal contains bugs. Reporting bug is a great and easy way to help. </li><li> Fixing bugs and proposing improvements.</li><li> Buying a physical copy of this book contributes to support the engineering effort and to prepare the next edition of the book.</li><li> It is difficult for us to imagine all the different ways people will use the artifacts promoted in this book. Actually, it would be presumptuous to think so. All feedback is welcome. Let us know what you wish to read and what you wish to read more about.</li><li> Making a simple &quot;Hello&quot; on one of the multiple communication channels.</li></ul>
+<h3>9.  Acknowledgements</h3><p>The book is the result of multiple and long-lasting collaborations. First of all, we would like to thank the Lam Research company. Lam Research's team has always been supportive both morally and financially. Thanks CH and Chris! You made this book a reality.</p>
+<p>Some of the chapters are external contributions. We therefore thank their authors:</p><ul><li> Bui Thi Mai Anh, Nick Papoulias and Serge Stinckwich for the chapter <em>Expressing Epidemiological Models</em>.</li><li> Leonel Merino for the chapter <em>Network Latency</em>.</li><li> Yuriy Tymchuk for the chapter on <em>Domain-Specific Visualization Made Easy</em>.</li><li> Onil Goubier and Thierry Goubier for the chapter <em>OpenStreetMap Integration</em>.</li><li> Peter Uhnák for the chapter <em>Applying Layout</em>.</li></ul>
+<p>Many people within the Moose, Pharo and ESUG communities have deeply contributed to what is presented in the book. Your enthusiastic support and trust in what we do has always been invaluable. </p>
+<p>We also would like to thank you, yes you, the reader, for your questions, support, bug fixes, contribution, and encouragement.</p>
+<p>We are deeply grateful to for their contributions to (no particular order) CH Huang, Chris Thorgrimsson, Tudor Gîrba, Renato Cerro, Stéphane Ducasse, Yuriy Tymchuk, Natalia Tymchuk, Juraj Kubelka, Juan Pablo Sandoval Alcocer, Milton Mamani, Vanessa Peña, Ronie Saldago, Alvaro Jose Peralta, Pablo Estefo, Igor Stasenko, Faviola Molina, Ricardo Jacas, Daniel Aviv Notario, Sergio Maass, Serge Stinckwich, Bui Thi Mai Anh, Nick Papoulias, Johan Fabry, Nicolai Hess, Miguel Campusano, Peter Uhnák, Martin Dias, Jan Blizničenko, Samir Saleh, Nicolai Hess, Leonel Merino, Volkert, Pierre Chanson, Andrei Chis, Thomas Brodt, Mathieu Dehouck, Miguel Campusano, Onil Goubier, Thierry Goubier, Esteban Maringolo, Alejandro Infante, Philippe Back, Stefan Reichhart, Ronie Salgado, Steffen Märcker.</p>
+
+<p> </p>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

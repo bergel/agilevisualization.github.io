@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Applying Layout</h2>
+<p class="note">This chapter was written with the participation of Peter Uhnák (<a href="mailto:i.uhnak@gmail.com">i.uhnak@gmail.com</a>).</p>
+<p>A layout is the visualization representation along a two-dimensional plan of elements, typically edges and nodes. A layout makes a visualization not only aesthetic but also comprehensible. Roassal offers numerous different layouts and supports the composition of layouts.</p>
+<p>Consider the following example (Figure <a href="#intro-random">0.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	view := RTView new.
+	es := (RTEllipse new size: 12; color: Color blue)
+		elementsOn: (1 to: 30).
+	view addAll: es.
+
+	RTEdgeBuilder new
+		view: view;
+		elements: es;
+		connectFrom: [ :value | value // 2 ].
+	
+	es do: [ :each | each translateTo: (250 atRandom) @ (250 atRandom) ].
+	view</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="intro-random"></a><figure><img src="figures/intro-random.png" width="50%"></img><figcaption>0.1. Graph with randomly placed nodes</figcaption></figure></p>
+<p>The script builds some elements and edges that link these elements. Each element is translated to a random location. Applying the <code>RTTreeLayout</code> layout highlights the structure from the connection between the elements (Figure <a href="#intro-tree">0.2</a>):</p>
+
+<p><figure><pre><code class="smalltalk">	view := RTView new.
+	es := (RTEllipse new size: 12; color: Color blue)
+		elementsOn: (1 to: 30).
+	view addAll: es.
+
+	RTEdgeBuilder new
+		view: view;
+		elements: es;
+		connectFrom: [ :value | value // 2 ].
+
+	es do: [ :each | each translateTo: (250 atRandom) @ (250 atRandom) ].
+	RTTreeLayout on: es.
+	view</code></pre><figcaption></figcaption></figure></p>
+<p><a name="intro-tree"></a><figure><img src="figures/intro-tree.png" width="50%"></img><figcaption>0.2. Tree layout</figcaption></figure></p>
+<p>The layout reveals that the elements form a binary tree and one can distinguish what the top root node is and what the leaves are.</p>
+<p>Roassal offers over 30 different layouts, each useful in its own rights.</p>
+
+<h3>1.  Element-based Layouts</h3>
+<p>Element-based layouts are a particular set of layouts in Roassal which do not consider edges to determine element locations. Instead of using edges, an element-based layout uses element size, shape or position within a group. Edges are not forbidden: they are simply not used by the layout.</p>
+<h4>1.1.  Circle Layouts</h4>
+<p>Circle layouts arrange elements along a geometrical circle. The order of the elements, as with all circle-based layouts, is the same as the collection on which the layout operates.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	
+	es := (RTEllipse new size: 12) elementsOn: (1 to: 10).
+	v addAll: es.
+	es @ RTLabeled.
+	
+	RTMetricNormalizer new 
+		elements: es; 
+		normalizeColor: #yourself using: (Array with: Color red with: Color lightRed).
+	
+	RTEdgeBuilder new
+		view: v;
+		elements: es;
+		connectFrom: [ :value | value // 2 ].
+	
+	RTCircleLayout new on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="circle-layout"></a><figure><img src="figures/circle-layout.png" width="50%"></img><figcaption>1.1. Circle layout applied on some elements </figcaption></figure></p>
+<p>A circular layout may be parametrized along several properties: </p>
+<p><figure><pre><code class="smalltalk">	RTCircleLayout new
+		initialIncrementalAngle: 30 degreesToRadians;
+		initialAngle: 15 degreesToRadians;
+		initialRadius: 200;
+		on: es.</code></pre><figcaption></figcaption></figure></p>
+<p><a name="circle-layout-config"></a><figure><img src="figures/circle-layout-config.png" width="50%"></img><figcaption>1.2. Some options of Circular Layout</figcaption></figure></p>
+<p>Without any option, the circle layout distributes all the elements evenly along a circle (<code>2pi</code>/<code>elements size</code>). Additionally radius can be either set absolutely via <code>initialRadius:</code>, or as a scalable factor <code>scaleBy:</code> - then the radius will be <code>elements size * scaleFactor</code>.</p>
+
+<p>It is important to note that <code>RTCircleLayout</code> does not take into consideration the size of the elements; this is enough when the elements are uniform, however if their sizes vary, different layouts may be considered.</p>
+<p>Variants of the default circle layout, named <em>equidistant</em> and <em>weighted</em> layouts, are also available:</p><ul><li> <code>RTEquidistantCircleLayout</code> makes sure that there is the same distance between each element.</li><li> <code>RTWeightedCircleLayout</code> on the other hand adds spacing based on the size of the elements. Thus there will be less space between smaller elements, and more space between large ones.</li></ul>
+<p>So now if we apply layout on non-uniform elements we get:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	elements := (RTEllipse new color: Color red; size: [:vv | vv * 4 ]) 
+		elementsOn: (1 to: 10).
+	v addAll: elements.
+	RTEquidistantCircleLayout on: elements.
+	elements translateBy: -150 @ 0.
+	v add: ((RTLabel new elementOn: 'Equidistant Layout') translateTo: -40 @ 100).
+	
+	es := (RTEllipse new color: Color blue; size: [:vv | vv * 4 ]) 
+		elementsOn: (1 to: 10).
+	v addAll: es.
+	RTWeightedCircleLayout on: es.
+	es translateBy: 150 @ 0.
+	v add: ((RTLabel new elementOn: 'Weighted Layout') translateTo: 260 @ 100).
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="circle-weighted"></a><figure><img src="figures/circle-weighted.png" width="80%"></img><figcaption>1.3. Equidistant (left) and Weighted (right) layout with non-uniform sizes</figcaption></figure></p>
+
+<h4>1.2.  Flow Layouts</h4>
+<p>A flow layout arranges elements in a 'flowing' manner. While we could consider circle layouts to be also a flow in a clockwise direction, layouts presented here provide flow by lines and columns.</p>
+<h5>1.2.1.  Flow and Grid Layouts</h5>
+<p>The flow layout arranges elements in lines, each line flowing from left to right; Horizontal flow on the other hand is in columns, flowing from top to bottom.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	
+	shape := RTCompositeShape new.
+	shape add: RTLabel new.
+	shape add: (RTBox new
+		color: Color transparent; borderColor: Color black).
+	es := RTGroup
+		with: (shape elementOn: RTFlowLayout)
+		with: (shape elementOn: RTHorizontalFlowLayout)
+		with: (shape elementOn: RTGridLayout)
+		with: (shape elementOn: RTCellLayout).
+	v addAll: es.
+	
+	RTNest new
+		for: es
+		inShape: #second
+		add: [ :group :layout |
+			group addAll: ((RTBox new size: [:m | m * 10])
+				elementsOn: (1 to: 6)).
+			layout new on: group.
+		].
+	
+	RTCellLayout new gapSize: 10; on: es.
+	
+	(v elements allButFirst: 4) @ (RTLabeled new
+		color: Color black; center).
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="flow-layouts"></a><figure><img src="figures/flow-layouts.png" width="50%"></img><figcaption>1.4. Flow and Grid Layouts</figcaption></figure></p>
+<p>Flow layouts vertically line up elements according to their size. The layout may be configured with a maximum total width (<code>maxWidth:</code>). For Grid and Cell layout this limit is instead number of items in the line (<code>lineItemsCount:</code>).
+By default a flow layout try to fill a roughly rectangular area, while a grid layout approximate the golden ratio.</p>
+<h5>1.2.2.  Alignment</h5>
+<p>Cells in Flow layouts can be aligned:</p>
+<p><a name="flow-alignment"></a><figure><img src="figures/flow-alignment.png" width="50%"></img><figcaption>1.5. <code>RTFlowLayout</code> alignments</figcaption></figure></p>
+<p>To align <code>RTHorizontalFlowLayout</code> use <code>alignTop</code> for left, and <code>alignBottom</code> for right alignment.</p>
+
+<h5>1.2.3.  Line Layouts</h5>
+<p>Two line layouts are offered: <code>RTVerticalLineLayout</code> and <code>RTHorizontalLineLayout</code> to layout, vertically and horizontally, respectively (Figure <a href="#line-layouts">1.6</a>).</p>
+<p><a name="line-layouts"></a><figure><img src="figures/line-layouts.png" width="50%"></img><figcaption>1.6. <code>RTVerticalLineLayout</code> and <code>RTHorizontalLineLayout</code></figcaption></figure></p>
+<p>Here is an example of the horizontal line layout:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new size: #yourself) elementsOn: (10 to: 40 by: 5).
+	v addAll: es.
+	RTHorizontalLineLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>Replacing <code>RTHorizontalLineLayout</code> by <code>RTVerticalLineLayout</code> triggers the vertical line layout instead.</p>
+<h3>2.  Edge-driven layouts</h3>
+<p>Edge-driven layouts determine the location of an element based on the edges linking these elements.</p>
+<h4>2.1.  Tree Layout</h4>
+<p>The beginning of this chapter gives an example of using the tree layout.</p>
+<p><a name="tree-gaps"></a><figure><img src="figures/tree-gaps.png" width="50%"></img><figcaption>2.1. <code>RTTreeLayout</code> demonstrating gap sizes</figcaption></figure></p>
+<p>Note that in the picture above the horizontalGap is applied only to the leaves of the tree; distance between parents is then accommodated automatically, so no overlapping or crossing occurs. The tree Layout orients the tree vertically, while the <code>RTHorizontalTreeLayout</code> uses an original orientation, from left to right.</p>
+
+<h4>2.2.  Radial Tree Layout</h4>
+<p>One problem with trees is that they tend to have many leaves which often results in very wide visualizations. One way to deal with this problem is to present the tree circularly.
+Since each new layer increases the radius of the circle, the overall element structure accommodates the space better.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.	
+	elsBuilder := [ | es |
+		es := (RTEllipse new size: 12) elementsOn: (1 to: 40).
+		v addAll: es.
+	
+	RTEdgeBuilder new
+		view: v;
+		elements: es;
+		connectFrom: [ :value | value // 2 ].
+
+	RTMetricNormalizer new
+		elements: es;
+		normalizeColor: #yourself using: (Array with: Color red with: Color green).
+	es
+	].
+	
+	g := RTGroup with: elsBuilder value with: elsBuilder value with: elsBuilder value.
+	
+	RTTreeLayout new on: g first.
+	RTHorizontalTreeLayout new on: g second.
+	RTRadialTreeLayout new on: g third.
+	
+	RTRectanglePackLayout new gap: 0.1; on: g.
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="tree-vs-radial-tree"></a><figure><img src="figures/tree-vs-radial-tree.png" width="50%"></img><figcaption>2.2. Comparison of <code>Horizontal</code>, <code>Vertical</code> and <code>Radial</code> Tree Layouts</figcaption></figure></p>
+<p>Note that <code>RTRadialTreeLayout</code> may produce an odd result in the presence of edge cycles.</p>
+<h4>2.3.  Dominance Tree Layout</h4>
+<p>This layout is especially useful for visualizing dependencies and flow charts, since it organizes elements in such a manner that the flow of the graph is emphasized.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	v @ RTDraggableView @ RTZoomableView.
+	classes := RTShape withAllSubclasses asGroup.
+	es := (RTEllipse new size: 15; color: Color blue) elementsOn: classes.
+	v addAll: es.
+	
+	eb := RTEdgeBuilder new.
+	eb view: v; objects: classes.
+	eb shape arrowedLine; color: Color red.
+	eb
+		connectFrom: #yourself toAll: #dependentClasses.
+		
+	RTDominanceTreeLayout new
+		verticalGap: 30;
+		horizontalGap: 15;
+		on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="dominance-tree"></a><figure><img src="figures/dominance-tree.png" width="50%"></img><figcaption>2.3.  <code>RTDominanceTreeLayout</code> showing dependencies between <code>RTShape</code> classes</figcaption></figure></p>
+
+<h4>2.4.  Cluster Layout</h4>
+<p>Cluster is visually similar to radial tree; it groups related elements together (Figure <a href="#cluster-layout">2.4</a>:.</p>
+<p><figure><pre><code class="smalltalk">	view := RTView new.
+	view @ RTDraggableView  @ RTZoomableView.
+	
+	es := (RTEllipse new size: 12) elementsOn: (4 to: 100).
+	view addAll: es.
+	
+	edges := RTGroup new.
+	es copy do: [ :e |
+		| fromE |
+		fromE := es elementFromModel: (e model // 2).
+		fromE ifNotNil: [ edges add: (RTLine edgeFrom: fromE to: e) ].
+		].
+	view addAll: edges.
+		
+	colorize := nil.
+	colorize := [ :root :color |
+	root outgoingEdges do: [ :edge |
+		edge shape color: color.
+		edge signalUpdate.
+		colorize value: edge to value: color.
+		].
+	].
+
+	colorize value: es first value: Color red.
+	colorize value: es second value: Color green.
+	colorize value: es third value: Color blue.
+	colorize value: es fourth value: Color orange.
+	
+	RTClusterLayout new on: es.
+	view</code></pre><figcaption></figcaption></figure></p>
+<p><a name="cluster-layout"></a><figure><img src="figures/cluster-layout.png" width="50%"></img><figcaption>2.4. Four trees clustered together</figcaption></figure></p>
+<p>The difference between the cluster and radial layouts has to do with the layers forming circles.</p>
+<h4>2.5.  Sugiyama</h4>
+<p>Sugiyama layout is a hierarchical layered layout. It places elements in hierarchical order such that edges goes from higher layer to lower layer.
+At the same time the layout minimizes the amount of layers and edge crossings (Figure <a href="#sugiyama">2.5</a>).</p>
+<p><figure><pre><code class="smalltalk">	classes := RTLayout withAllSubclasses.
+	b := RTMondrian new.
+	b shape ellipse color: Color purple; size: 5.
+	b nodes: classes.
+	b edges connectFrom: #superclass.
+	b layout sugiyama.
+	b</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="sugiyama"></a><figure><img src="figures/sugiyama.png" width="50%"></img><figcaption>2.5. Sugiyama layout applied on hierarchy of `RTLayout` classes</figcaption></figure></p>
+<h4>2.6.  Force Based Layout</h4>
+<p>Force Based Layout applies force between related elements similar to electrical charge. Thus related elements will repulse each other. The <code>charge</code> is usually negative since it represents repulsion.
+Additionally to <code>charge:</code> you can also specify <code>strength:</code>, which is the strength of the bonds (edges) between elements.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+
+	es := RTEllipse elementsOn: Collection withAllSubclasses.
+	v addAll: es.
+
+	RTEdgeBuilder new
+		elements: es;
+		view: v;
+		moveBehind;
+		connectToAll: #dependentClasses.
+
+	RTForceBasedLayout on: es.
+
+	RTMetricNormalizer new
+		elements: es;
+		normalizeColor: #numberOfMethods;
+		normalizeSize: #numberOfMethods.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="layout-force01.png"></a><figure><img src="figures/layout-force01.png" width="90%"></img><figcaption>2.6.  <code>RTForceBasedLayout</code> used to layout hierarchy of classes</figcaption></figure></p>
+<p>The force based layout is appealing due to its simplicity of use and nice results that it produces. However, it badly scales. Performing a force based layout on hundreds of nodes and edges may take hours (literally). Before performing this layout on a large graph, one may want to try it on a reduced graph.</p>
+<h4>2.7.  Rectangle Pack</h4>
+<p><code>RTRectanglePackLayout</code> packs all the elements as tightly as possible. It uses an element's bounding box, so using circles or polygons instead of boxes will have no effect. One use for this layout is to provide comparative views of some elements — name clouds, source code size of classes, etc.</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	v addAll: ((RTEllipse new color: (Color red alpha: 0.3)) elementsOn: Collection withAllSubclasses) @ RTPopup.
+	RTMetricNormalizer new
+		elements: v elements;
+		normalizeSize: #numberOfLinesOfCode min: 10 max: 60;
+		normalizeColor: #numberOfMethods using: (Array with: Color gray with: Color red ).
+	RTRectanglePackLayout on: v elements.
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="rectangle-pack"></a><figure><img src="figures/rectangle-pack.png" width="50%"></img><figcaption>2.7. Pack of different elements</figcaption></figure></p>
+<p><code>RTNameCloud</code> also internally uses <code>RTRectanglePackLayout</code></p>
+<p><figure><pre><code class="smalltalk">	b := RTNameCloud new 
+		addString: 'open
+		| v shape |
+		v := RTView new.
+		shape := RTLabel new height: [ :assoc | assoc value ]; text: #key.
+		v addAll: (shape elementsOn: table associations).
+		RTFlowLayout on: v elements.
+		v open'.
+	b</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="name-cloud"></a><figure><img src="figures/name-cloud.png" width="40%"></img><figcaption>2.8. <code>RTRectanglePackLayout</code> used to layout a name cloud</figcaption></figure></p>
+<h3>3.  Layout builder</h3>
+<p>The class <code>RTLayoutBuilder</code> offers expressive ways to build and compose layouts. The layout builder is offered by Mondrian. Consider the following Mondrian script (Figure <a href="#layoutBuilder01">3.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b nodes: RTShape withAllSubclasses.
+	b shape line color: Color blue trans.
+	b edges 
+		connectToAll: [ :c | c dependentClasses copyWithout: c superclass ].
+	b layout 
+		force.
+	b</code></pre><figcaption></figcaption></figure>
+<a name="layoutBuilder01"></a><figure><img src="figures/layoutBuilder01.png" width="60%"></img><figcaption>3.1. Dependencies between classes</figcaption></figure></p>
+<p>The script represents each subclass of <code>RTShape</code> as a box. Edges represents dependencies between classes, without considering inheritance. We made this example to produce lonely classes. It often happens that lonely classes need a particular layout. </p>
+<p>The message <code>ifNotConnectedThen:</code> takes as argument a layout (<em>i.e.,</em> an instance of a subclass of <code>RTLayout</code>). The provided layout is applied only to elements that are not connected (<em>i.e.,</em> with no incoming or outgoing edges).</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b nodes: RTShape withAllSubclasses.
+	b shape line color: Color blue trans.
+	b edges 
+		connectToAll: [ :c | c dependentClasses copyWithout: c superclass ].
+	b layout 
+		force;
+		ifNotConnectedThen: RTGridLayout new.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="layoutBuilder02"></a><figure><img src="figures/layoutBuilder02.png" width="60%"></img><figcaption>3.2. Conditional layout</figcaption></figure></p>
+<p>Using the composition of layout and the layout builder (Figure <a href="#force-based">3.3</a>):
+<figure><pre><code class="smalltalk">	classes := RTLayout withAllSubclasses, RTBuilder withAllSubclasses, RTShape withAllSubclasses.
+	
+	b := RTMondrian new.
+	b shape circle size: 5.
+	b nodes: classes.
+	b edges connectFrom: #superclass.
+	
+	b normalizer
+		objects: classes;
+		normalizeSize: #numberOfMethods min: 5 max: 30;
+		normalizeColor: #numberOfLinesOfCode using: (Array with: Color green with: Color red ) using: #sqrt.
+		
+	b layout
+		for: [ :c | c includesBehavior: RTLayout ] use: RTForceBasedLayout new;
+		for: [ :c | c includesBehavior: RTBuilder ] use: RTForceBasedLayout new;
+		for: [ :c | c includesBehavior: RTShape ] use: RTForceBasedLayout new;
+		flow.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="force-based"></a><figure><img src="figures/force-based.png" width="90%"></img><figcaption>3.3.  <code>RTForceBasedLayout</code> used to layout hierarchy of classes</figcaption></figure></p>
+<p>Several layouts are available:</p><ul><li> <code>force</code> for a force based layout (also called spring layout)</li><li> <code>horizontalLine</code> for the horizontal line layout</li><li> <code>verticalLine</code> to vertically line up elements</li><li> <code>tree</code> to have a vertical tree</li><li> <code>horizontalTree</code> for an horizontal tree, roots are on the left-hand side and leaves on the right-hand side</li><li> <code>cluster</code> and <code>radial</code> for radial-based layout</li><li> <code>sugiyama</code> for the Sugiyama layout, which is a vertical tree layout that minimizes edges crossing</li></ul>
+<h3>4.  Creating custom layout</h3>
+<p>If you want to add your own layout you just need to subclass <code>RTLayout</code> and implement <code>RTLayout&gt;&gt;doExecute: elements</code>.</p>
+<p>For more fine-graded control you have three main methods available.</p>
+<p><figure><pre><code class="smalltalk">	RTLayout&gt;&gt;executeOnElements: elements
+		self doInitialize: elements.
+		self doExecute: elements asOrderedCollection.
+		self doPost: elements.</code></pre><figcaption></figcaption></figure></p>
+<ol><li> <code>doInitialize:</code> can be used for element preprocessing, if needed. For example <code>RTAbstractGraphLayout</code> uses this for removing cycles from the graph, so the layouts can work only with trees.</li><li> <code>doExecute:</code> is the main method, and the only method that must be implemented. Perform your layout here.</li><li> <code>doPost:</code> allows one to insert post-processing actions.</li></ol>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

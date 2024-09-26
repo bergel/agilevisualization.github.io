@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Network Latency</h2>
+<p>Nowadays, people spend a lot of time using electronic gadgets such as computers, smartphones or tablets. As time goes by, all of these devices seem useless without Internet connectivity. Users always want to improve their experience while using Internet services. They acquire Internet connections with the highest bandwidth possible; they buy the phone which promises the fastest connectivity by using 4G; and they sign up for residential fiber-optic Internet. All of these options ar eexpected to offer the best experience. However, there is a hidden element that can affect user experience that most users do not consider, which is <strong>network latency</strong>. </p>
+<p>This chapter is written by Leonel Merino (<a href="mailto:merino@inf.unibe.ch">merino@inf.unibe.ch</a>), PhD student from the University of Bern.</p>
+<h3>1. Prelude</h3><p>The latency of a network is the sum of the latency added by every node that takes part in a network communication. Each network node has an inherent latency, specified by its manufacturer. The latency of a network node ---such as a router, a switch, a hub--- is the time elapsed from the moment when it receives a packet and when it sends a response. The path between two computers in a network is dynamic and normally implies several hops through intermediate nodes. Therefore, the latency of a connection will depend on the path that it takes. The range of network latency in Internet are normally in the order of milliseconds. Since the latency is a base delay in each connection, protocols that open many connections are more affected. In consequence, services such as music, video and online games which typically split data into a bunch of small packets are more sensitive to high latency.</p>
+<h4>1.1. Motivation</h4><p>When a node of the network fails, the communication paths that pass by the node increase their latency (the impact depends on the nature of the failure). From the point of view of the company which offers the Internet service, there is a need for monitoring how is latency levels among the nodes of the network. In case of a failure, the nodes may react and take corrective actions. Visual tools are extensively used for monitoring services. They allow operators to spot failures at a glance, or in other cases to be aware of how close the latency is to the threshold the user experience is compromised.</p>
+<h4>1.2. Case study</h4><p>In our case study we analyzed a proxy service that operates 145 nodes distributed in different cities around the world. By using Roassal we developed a tool for visualizing the status of the service. We called the tool Network Latency Visual Analyzer (NLVA). The tool envisions two kinds of users: a company that manages a network and clients of that company. The tool offers different views of the dataset which helps the company to be aware of failures (to spot where possible failures occurred and what potential users can be affected); to take actions for improving the service by highlighting nodes that are geographically close but that have a high latency ---in comparison with the rest of them--- allowing the company to possibly change the service provider between those nodes; and to spot where the best endpoints are for each node that offers the lowest latency, which can be of help to end users ---<em>e.g.,</em> a gamer who wants to know to which server should he connect to minimize the lag.</p>
+<h3>2. Network Latency Visual Analysis in a Nutshell</h3><p>When developing NLVA we did not want to start from scratch. We thought that the MapBuilder example, which comes with Roassal offers many of the features that we wanted to have in this tool. However, we decided not to directly modify it or to replicate its code. We reused it by extending some parts of it to fit our purpose. The package <code>NetworkLatency</code> contains the NLVA implementation, made of six classes: <code>NLCityBuilder</code>, <code>NLMapBuilder</code>, <code>NLPopup</code>, <code>NLRoute</code>, <code>NLRouteBuilder</code>, and <code>NLVisualise</code>.</p>
+<p>All of these classes except <code>NLVisualise</code> extend a Roassal counterpart. We follow this naming convention <code>RTClassName —&gt; NLClassName</code>. These classes add or modify features of the original MapBuilder implementation. The remaining class <code>NLVisualise</code> is the entry point to run the visualization. It is the main class that holds methods to retrieve the dataset, to trigger ping commands in the local machine, and to build the visualization.  </p>
+<h4>2.1. Resources</h4><p>NLVA comes with a dataset that contains a snapshot of the latency between servers of a network. It also includes the location (lat/long) of the cities highlighted in the visualization. In addition, it holds IP addresses that are physically located in each city (used when testing user local connectivity). These data were collected from the following sites:</p>
+
+<table style="border: solid thin"><tr><th>Resource </th><th>URL</th></tr><tr><td>Network Latency dataset </td><td><a href="https://wonderproxy.com">https://wonderproxy.com</a></td></tr><tr><td>IP Location </td><td> <a href="http://www.iplocation.net">http://www.iplocation.net</a></td></tr><tr><td>Geolocation </td><td> <a href="http://www.latlong.net">http://www.latlong.net</a></td></tr></table>
+<h4>2.2. Visual Queries</h4>
+<p>The following queries are examples showing that a visualization of the dataset provides a quick notion of the answer that can be followed by a detailed analysis of the latency measures. At the end, it can help to exclude candidates from the set of possible answers, narrowing the space of solutions. As an exercise the reader can surely find more queries that can be supported by the different views included in the tool.</p>
+<ol><li>Where should a company using this network store content for delivering to users in Paris? (<em>Hint: Best</em>)</li><li>Do you notice some possible failures in the network that may impact the latency? (<em>Hint: Worst</em>) </li><li>Are cities with better connectivity distributed equally in both hemispheres? (<em>Hint: Average</em>)</li><li>What are the cities where the company should invest to improve overall network latency? (<em>Hint: CloseHigh</em>)</li><li>If you want to provide a service in both the US and Europe (using this network), where would be the best two cities to locate a host? (<em>Hint: FarLow</em>)</li><li>If I am in the Paris, to which continents should I prioritize connections?. How would <em>my service</em> be affected if a move it from Paris to New York?  (<em>Hint: Left-click on a city</em>)</li><li>How is the network latency in general from my city? (<em>Hint: Right-click on your city if listed or in another region of a country</em>)</li><li>Would I improve my connectivity using the service from which the dataset comes (over my actual provider)? (<em>Hint: Comparing the results of left and right click if your city is included in the visualization</em>)</li></ol>
+
+<h3>3. Loading NLVA</h3>
+<p>There are two ways to load NLVA. It can be loaded using using the <code>NetworkLatency</code> plugin, accessible from the World menu (Figure <a href="#NLVAWorldMenu">3.1</a>).</p>
+<p><a name="NLVAWorldMenu"></a><figure><img src="figures/NLVAWorldMenu.png" width="80%"></img><figcaption>3.1. Use the plugin to load NLVA</figcaption></figure></p>
+<p>Programmatically, you can load it using a Gofer expression, executed in a Playground. Simply copy &amp; paste the following expression in a Playground, and evaluate it: 
+<figure><pre><code class="smalltalk">	Gofer new smalltalkhubUser: 'merino'
+		project: 'NetworkLatency';
+		package: 'ConfigurationOfNetworkLatency';
+		load.
+	(Smalltalk at: #ConfigurationOfNetworkLatency) loadDefault</code></pre><figcaption></figcaption></figure></p>
+<p>Afterwards, you launch the tool by evaluating:
+<figure><pre><code class="smalltalk">	NLVisualise new open</code></pre><figcaption></figcaption></figure></p>
+
+<h3>4. Visualizing latency in a proxy service</h3><p>NLVA shows a visualization of a map of the world highlighting 145 cities spread over 70 countries (purple circle). NLVA comes with several views of the data shown in a menu at the top of the window that helps to move from different views such as 'Best', 'Worst', 'MST' (Minimal Spanning Tree), 'Close High' and 'Far Low'. The default view is 'Best', which shows where the city is with which it has the best connectivity (in terms of latency). The color of the edge between the cities represents the latency of the connection. Green edges are the best connections; orange edges indicate an average quality, red ones are worse, and dark red edges indicate the worst latencies (the ranges are split in [0,100ms[, [100ms, 300ms[, [300ms, 1000ms[ and greater than 1000ms).
+<a name="City-Centered01"></a><figure><img src="figures/worst.png" width="100%"></img><figcaption>4.1. Worst latency for each city. Note that <em>Valencia</em> and <em>Nairobi</em> concentrate the most of the worst endpoints for connections.</figcaption></figure>
+<a name="City-Centered02"></a><figure><img src="figures/average.png" width="100%"></img><figcaption>4.2. Average latency for each city.</figcaption></figure></p>
+<p><a name="City-Centered03"></a><figure><img src="figures/mst.png" width="100%"></img><figcaption>4.3. MST shows what probably are physical wires connecting cities.</figcaption></figure>
+<a name="City-Centered04"></a><figure><img src="figures/far-low.png" width="100%"></img><figcaption>4.4. FarLow. Far cities that show low latency. Most East Coast cities of the US are the best endpoints for European connections. A couple of unexpected results <em>Joao Pessoa-Orlando</em> and <em>Portland-Anchorage</em>.</figcaption></figure></p>
+<p><a name="City-Centered05"></a><figure><img src="figures/far-low2.png" width="100%"></img><figcaption>4.5. Zooming-in on the <em>Portland-Anchorage</em> latency.</figcaption></figure></p>
+<p>There is also another visualization which is not triggered from the menu. By left-clicking in any city (purple circles) the user can see the latency from that city to the other cities (included in the dataset).
+<a name="City-Centered06"></a><figure><img src="figures/left-click.png" width="100%"></img><figcaption>4.6. Latencies from <em>Brisbane</em></figcaption></figure></p>
+<p>These visualizations show data which comes from a private company (see <strong>Resources</strong>) that offers a Internet Proxy service. The company shows the status of their service in its website from which the data was manually collected. The data can be inaccurate (the snapshot was taken at the end of 2014), so its only purpose is to be a proof-of-concept for showing how network latency data can be analyzed in a visual manner.</p>
+
+<h3>5. Visualizing your own connectivity</h3><p>NLVA also includes a feature to allow users to test their own connectivity. To run it you have to right-click on the map approximately where your location is (the city can be already included in the map or not). A warning will popup asking you if you really want to run the test. It takes just a couple of seconds. It will show edges from your location to the rest of the cities included in the visualization (specifying their latency). A relevant analysis is to compare those results with the integrated data that comes with the tool ---caveat: it can only be done for the cities that come with the visualization (left and right-click).
+<a name="City-Centered07"></a><figure><img src="figures/right-click.png" width="100%"></img><figcaption>5.1. Latencies from ''Bern’’, my actual location.</figcaption></figure></p>
+
+
+
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Interactive Visualization</h2>
+<p>Roassal elements (and Trachel shapes) may react to user events such as mouse clicking, mouse moving and key pressing. Making a visualization interactive is important to enable the following: navigate within a data set, drill-down/up, details on demand without overloading a visualization. 
+Roassal offers a number of interaction, implemented as a subclass of <code>RTInteraction</code>. </p>
+<h3>1.  Draggable elements and view</h3>
+<p>Elements may be draggable using the interaction <code>RTDraggable</code> and a view may be draggable using <code>RTDraggableView</code>. Interaction may be set on one element or a group of elements, using the message <code>@</code>.
+Consider the following example:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	v @ RTDraggableView.
+	es := RTBox elementsOn: (1 to: 20) asArray shuffled.
+	es @ RTDraggable.
+	es @ RTPopup.
+	v addAll: es.
+
+	RTMetricNormalizer new
+		elements: es;
+		normalizeColor: #yourself;
+		normalizeSize: #yourself.
+
+	RTFlowLayout on: v elements.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="interaction1"></a><figure><img src="figures/interaction1.png" width="45%"></img><figcaption>1.1. Simple example without interaction</figcaption></figure></p>
+<p>Interactions may be added at anytime to the element and the view. 
+The instruction <code>es @ RTDraggable</code> may be located before or after adding the elements in the view. </p>
+<h3>2.  Popup</h3>
+<p>A popup is a contextual information that appears when the mouse is above an element. The information is removed when the mouse leaves the element. Adding the expression <code>es @ RTPopup</code> makes the element react to mouse movements. </p>
+<p>Without being configured, as it is the case with the expression <code>es @ RTPopup</code>, the popup content is directly generated from the model behind the pointed element. For example:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := RTEllipse elementsOn: (1 to: 100).
+	es @ RTPopup.
+	v addAll: es.
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>Each circle represents a number. Pointing to an element using the mouse open a small number that indicates the pointed number. The popup may be configured in a number of ways.</p>
+<p>For example, the following example shows different combinations of popup configuration:
+<figure><pre><code class="smalltalk">	v := RTView new.
+	es := RTEllipse elementsOn: (1 to: 100).
+	popup := RTPopup new.
+	popup alphaPopupBackground: 0.5.
+	popup backgroundColor: Color blue.
+	popup borderColor: Color red.
+	popup textColor: Color orange.
+	popup text: [ :object | 'Value ', object asString ].
+	
+	es @ popup.
+	v addAll: es.
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>A popup supports multi-lined text. For example, you may insert a carriage return character in the <code>text:</code> instruction:
+<figure><pre><code class="smalltalk">	...
+	popup text: [ :object | 'Value = ', String cr, object asString ].
+	...</code></pre><figcaption></figcaption></figure></p>
+<h3>3.  Fixed popup</h3>
+<p>A fixed popup is like a popup, but it is located at the bottom left of the window. This is useful when the popup embeds a long text, or the popup negatively interferes with the visualization.</p>
+<p>The class <code>RTFixedPopup</code> is a subclass of <code>RTPopup</code>, as a consequence, you can simply replace the use of <code>RTPopup</code> by <code>RTFixedPopup</code> to have a fixed popup. </p>
+<h3>4.  Graphical popup</h3>
+<p>Examples given previously in this chapter use text as a popup content. A popup does not necessarily need to render text and may render any arbitrary visualization.</p>
+<p>Consider the following example (Figure <a href="#interactionGraphicalPopup01">4.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+
+	labels := RTLabel elementsOn: (1 to: 10).
+
+	popup := RTPopup new.
+	popup group: [ :aGroup :element | 
+		| es |
+		es := (RTEllipse new size: 10; color: Color red) elementsOn: (1 to: element model).
+		aGroup addAll: es.
+		RTGridLayout on: es.
+		].
+	labels @ popup.
+	v addAll: labels.
+	RTGridLayout on: labels.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="interactionGraphicalPopup01"></a><figure><img src="figures/interactionGraphicalPopup01.png" width="90%"></img><figcaption>4.1. Graphical popup</figcaption></figure></p>
+<p>The message <code>group:</code> takes as argument a block with two arguments. The first argument, called <code>aGroup</code> in our example, receives an empty group of elements. The block is intended to add elements in the <code>aGroup</code> variables. Those elements will be used by the popup. Layout may be applied.</p>
+<p>Edges may be also added. Consider (Figure <a href="#interactionGraphicalPopup02">4.2</a>):
+<figure><pre><code class="smalltalk">	v := RTView new.
+
+	es := RTLabel elementsOn: (5 to: 100 by: 5).
+
+	v addAll: es.
+
+	es @ (RTPopup new 
+		background: Color blue
+		group: [ :group :el |  
+	 		| elements |
+			elements := RTEllipse elementsOn: (1 to: el model).
+			group addAll: elements.
+			RTEdgeBuilder new
+				view: group;
+				elements: elements;
+				connectFrom: [ :aNumber | aNumber // 2 ]. 
+			RTClusterLayout new 
+				verticalGap: 0; 
+				on: elements.
+			]).
+
+	RTHorizontalLineLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="interactionGraphicalPopup02"></a><figure><img src="figures/interactionGraphicalPopup02.png" width="90%"></img><figcaption>4.2. Popup using edges</figcaption></figure></p>
+<p>The edge builder is set with <code>group</code> as the view. This is where the edge builder will look into elements to link. Methods alternative to <code>background:group:</code> may be used, such as <code>group:</code> if the background is not necessary. A title is added to the popup by using <code>named:background:group:</code> as in:
+<figure><pre><code class="smalltalk">	...
+	es @ (RTPopup new 
+		named: [ :aNumber | 'Cluster for ', aNumber asString ]
+		background: Color blue
+		group: [ :group :el | 
+			...
+			]
+	...</code></pre><figcaption></figcaption></figure></p>
+
+<h3>5.  Highlighting elements</h3>
+<p>Reacting to the mouse movement by highlighting related elements is a frequent need. The interaction class <code>RTHighlightable</code> is a flexible interaction to highlight particular elements. Consider the following code snippet (Figure <a href="#interactionHighlightable">5.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := RTEllipse elementsOn: (20 to: 70 by: 5) asArray shuffle.
+	v addAll: es.
+	es @ RTPopup.
+	RTMetricNormalizer new
+		elements: es;
+		normalizeSize: #yourself;
+		normalizeColor: #yourself.
+	RTFlowLayout on: es.
+
+	es @ RTHighlightable.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="interactionHighlightable"></a><figure><img src="figures/interactionHighlightable.png" width="45%"></img><figcaption>5.1. Simple example without interaction</figcaption></figure></p>
+<p>When the mouse enters an element, the color of that element changes. When the mouse leaves, the original color is restored. The default highlighting color is blue. It can be set using the <code>color:</code> message. For example, the following instruction <code>es @ (RTHighlightable new color: Color pink)</code> set the color to pink.</p>
+<p>A set of object models or Roassal elements may be provided using <code>highlight:</code> or <code>highlightElements:</code>. Consider the second version of the previous script:</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := RTEllipse elementsOn: (20 to: 70 by: 5) asArray shuffle.
+	v addAll: es.
+	es @ RTPopup.
+	RTMetricNormalizer new
+		elements: es;
+		normalizeSize: #yourself;
+		normalizeColor: #yourself.
+	RTFlowLayout on: es.
+
+	es @ (RTHighlightable new highlight: [ :aNumber | aNumber to: 70 by: 5] ).
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>Object models greater than the one on which the mouse is above are highlighted. </p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := RTEllipse elementsOn: (20 to: 70 by: 5) asArray shuffle.
+	v addAll: es.
+	es @ RTPopup.
+	RTMetricNormalizer new
+		elements: es;
+		normalizeSize: #yourself min: 5 max: 30;
+		normalizeColor: #yourself.
+	RTFlowLayout on: es.
+
+	es @ (RTHighlightable new highlightElements: [ :element | 
+		element view elements select: [ :e | e trachelShape height &gt; 15 ] ] ).
+	v</code></pre><figcaption></figcaption></figure></p>
+<p>Both <code>highlight:</code> and <code>highlightElements:</code> accept a one-argument block. The argument block as to return a collection of object models or a collection of Roassal elements, respectively.</p>
+<h3>6.  Dynamically adding labels and edges</h3>
+<p>Labels and edges may be added as a kind of popup. Consider the following example (Figure <a href="#interactionAddingEdges01">6.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	es := (RTBox new color: (Color blue alpha: 0.4)) 
+			elementsOn: (RTShape withAllSubclasses).
+	v addAll: es.
+
+	RTNest new
+		for: es add: [ :group :model | 
+			group addAll: (RTBox new elementsOn: model methods).
+			RTGridLayout on: group ].
+	
+	es @ (RTShowEdge new 
+				connectTo: #dependentClasses; 
+				shape: (RTLine new color: Color red);
+				yourself).
+	es @ (RTShowLabel new 
+				color: Color red;
+				highlight: #dependentClasses; top; yourself).
+	RTGridLayout on: es.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="interactionAddingEdges01"></a><figure><img src="figures/interactionAddingEdges01.png" width="55%"></img><figcaption>6.1. Dynamically adding edges</figcaption></figure></p>
+<p>The interactions <code>RTShowEdge</code> and <code>RTShowLabel</code> are used. <code>RTShowEdge</code> defines some edges connecting to <code>dependentClasses</code> using the shape provided to <code>shape:</code>. <code>RTShowLabel</code> temporarily gives a label to related elements. In the example given above, the labels are located on the <code>top</code> of an element.</p>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

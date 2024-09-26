@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Domain-Specific Visualization Made Easy with Builders</h2>
+<p>The Roassal visualization engine is a generic purpose engine for visualizing data. Roassal has been designed to easily map any arbitrary Pharo object structure, metrics, properties to visual dimensions.</p>
+<p>Frequently, visualizations have the same limitation than software artifact: if not properly designed, a visualization is difficult to extend and reuse in a context that is different from the one for which it had been originally designed. In software engineering, problems traditionally associated with software reuse, composition, and extension are tremendously alleviated by employing domain-specific languages: a reduced and specialized language for a particular application domain lowers the effort of designing and maintaining software. </p>
+<p>Roassal supports a generic infrastructure, called <em>builder</em>, to efficiently build and reuse visualizations. Builder follows the key  principles of domain-specific languages by supporting the definition of <em>domain-specific visualizations</em>, <em>i.e.,</em> visualizations tailored to a particular domain. Builder offers a set of reusable building blocks to easily define visual shapes, interaction and layout over any arbitrary domain. A builder encapsulates the logic of a visualization and maps a particular domain to visual Roassal elements.</p>
+<p>The builder infrastructure is composed of five key classes, which are reviewed along this chapter.</p>
+<p>This chapter was written with the participation of Yuriy Tymchuk (<a href="mailto:yuriy.tymchuk@me.com">yuriy.tymchuk@me.com</a>)</p>
+<h3>1.  Punch card example</h3><p>This section describes the builder infrastructure in a tutorial-like fashion. 
+The example we use throughout this paper is a punch card, as shown in Figure <a href="#examplePunchCard">1.1</a>.</p>
+<p><a name="examplePunchCard"></a><figure><img src="figures/example04.png" width="50%"></img><figcaption>1.1. Second version of the punchcard builder</figcaption></figure></p>
+<p>Metrics are vertically located on the left hand side and elements are horizontally located. The figure shows that the element <code>RTBuilder</code> and <code>RTPunchcard</code> have high values for the metrics <code>NOM</code>, <code>NOA</code>, and <code>LOC</code>.</p>
+<h3>2.  Defining a builder with RTBuilder</h3>
+<p>The class <code>RTBuilder</code> translates a user-defined domain into low level instructions using the Roassal API. A builder essentially wraps a Roassal view and offers dedicated (sub-)builders, for edges, nodes, interaction, described in the following sections.</p>
+<p>A punchcard is defined mapping objects and metrics to some visual dimensions (<em>e.g.,</em> elements size and colors). Computing the metrics over the objects results in a grid. The input of the builder will therefore be objects and metrics. </p>
+<p>So far, most of the visualizations have been defined by typing in a playground. The playground is made to easily build script and try out relatively short pieces of code. As soon as &quot;serious&quot; code has to be written, such as a builder, you need to move away from the playground and use the Nautilus System Browser. The System Browser is open from the World menu.</p>
+<p>The very first step, as for any code writing in Pharo, you need to define a package. The package <code>Punchcard</code> is created by right-clicking on the package pane (top-left textual pane) in a system browser.</p>
+<p>A builder is created by subclass the class <code>RTBuilder</code>. We therefore create a subclass of it, called <code> RTPunchcard </code>:</p>
+<p><figure><pre><code class="smalltalk">	RTBuilder subclass: #RTPunchcard
+		instanceVariableNames: 'metrics objects'
+		classVariableNames: ''
+		package: 'Punchcard'</code></pre><figcaption></figcaption></figure></p>
+<p>As seen in the chapter about the Pharo language, the class <code>RTPunchcard</code> contains two instance variables, called <code>metrics</code> and <code>objects</code>. These instance variables have to be initialized. Defining an <code>initialize</code> method in <code>RTPunchChard</code> is therefore our next step:</p>
+<p><figure><pre><code class="smalltalk">	initialize
+		super initialize.
+		objects := OrderedCollection new.
+		metrics := OrderedCollection new.</code></pre><figcaption></figcaption></figure></p>
+<p>All the methods provided in this chapter are defined in the class we have just defined. 
+An end-user defines a visualization by specifying objects and metrics. Two methods have to be provided for that purpose:</p>
+<p><figure><pre><code class="smalltalk">	addMetric: blockOrSymbol named: aName
+		metrics add: aName -&gt; blockOrSymbol
+
+	addObject: anObject
+		objects add: anObject</code></pre><figcaption></figcaption></figure></p>
+<p>The method <code>renderIn:</code> is key in the builder framework. This is where the visualization is constructed, <em>i.e.,</em> Roassal elements are created and the view is filled. The method <code>renderIn:</code> is intended to be overridden when creating a new builder class. 
+Here is a first version of the method <code>renderIn:</code> which displays a list of objects, and computes the metrics for each object:</p>
+<p><figure><pre><code class="smalltalk">	renderIn: aView	
+		aView add: (RTLabel elementsOn: ' ').
+		objects 
+			do: [ :object | aView add: (RTLabel elementOn: object) ].
+	
+		metrics do: [ :assoc |
+			aView add: (RTLabel elementOn: assoc key).
+			objects do: [ :object |
+				| value |
+				value := assoc value rtValue: object.
+				aView add: ((RTEllipse new size: value) element) ] ].		
+			
+		RTCellLayout new 
+			lineItemsCount: objects size + 1;
+			on: aView elements</code></pre><figcaption></figcaption></figure></p>
+<p>Line 1 inserts an empty label, used for the first column. Line 3 - 4 inserts a label for each object. Line 6 - 11 inserts the name of each metric and compute the metrics against the objects. Lines 13 - 15 layout the elements as a grid.</p>
+<p>At that stage, the builder may be invoked as: </p>
+<p><figure><pre><code class="smalltalk">	b := RTPunchcard new.
+	b addObject: RTPunchcard.
+	b addObject: RTBox.
+	b addObject: RTBuilder.
+	b addMetric: #numberOfMethods named: 'NOM'.
+	b addMetric: #numberOfVariables named: 'NOA'.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="example01"></a><figure><img src="figures/example01.png" width="50%"></img><figcaption>2.1. First version of the punchcard builder</figcaption></figure></p>
+<p>The objects used in the visualization are three classes: <code>RTPunchcard</code>, <code>RTBox</code>, <code>RTBuilder</code>. For each of these classes, the messages <code>numberOfMethods</code> and <code>numberOfVariables</code> will be sent to return a numerical value. </p>
+<p>The produced rendering is given in Figure <a href="#example01">2.1</a>. At that stage, the visualization is very simplistic: circles may be excessively large if metric values are high and the exact value behind each circle is not accessible. We address this in the subsequent sections.</p>
+
+<h3>3.  Specifying shapes with RTShapeBuilder</h3>
+<p>A shape builder is a particular object to configure shapes and is a factory of Roassal elements.
+The code <code>renderIn:</code> method uses the expression <code>RTEllipse new size: value</code> to define a circle with a size given by each metric value. Size of an ellipse is therefore linear to the value, which is not really optimal in case of large disparities between values.</p>
+<p>By using a shape builder, the shape may be defined <em>externally</em> from the <code>renderIn:</code> method. </p>
+<p>A builder offers the method <code>createShapeBuilder</code> to initialize the shape builder used when creating elements, using <code>elementOn:</code>. In our case, we are interested in having circle shapes of a size given by the element's object model. Overriding the method <code>createShapeBuilder</code> allows one to initialize the shape builder associated to a builder.</p>
+<p><figure><pre><code class="smalltalk">	createShapeBuilder
+		| sb |
+		sb := super createShapeBuilder.
+		sb ellipse size: #yourself.
+		^ sb</code></pre><figcaption></figcaption></figure></p>
+<p>The method <code>renderIn:</code> directly uses <code>RTEllipse</code>, at Line 11. Having this use of the shape prevents one from changing the shape. Instead, this method can be rewritten:</p>
+<p><figure><pre><code class="smalltalk">	renderIn: aView	
+		aView add: (RTLabel elementsOn: ' ').
+		objects 
+			do: [ :object | aView add: (RTLabel elementOn: object) ].
+	
+		metrics do: [ :assoc |
+			aView add: (RTLabel elementOn: assoc key).
+			objects do: [ :object |
+				| value |
+				value := assoc value rtValue: object.
+				aView add: (self elementOn: value) ] &quot;New line&quot;].		
+			
+		RTCellLayout new 
+			lineItemsCount: objects size + 1;
+			on: aView elements</code></pre><figcaption></figcaption></figure></p>
+<p>The behavior as shown in the previous example is preserved. However, by using <code>elementOn:</code> to create elements, visual shapes may be particularized by the end-user. Consider the following example:
+<figure><pre><code class="smalltalk">	b := RTPunchcard new.
+	b shape rectangle
+		size: [ :v | v sqrt * 3 ].
+	b addObject: RTPunchcard.
+	b addObject: RTBox.
+	b addObject: RTBuilder.
+	b addMetric: #numberOfMethods named: 'NOM'.
+	b addMetric: #numberOfVariables named: 'NOA'.
+	b addMetric: #numberOfLinesOfCode named: 'LOC'.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="example02"></a><figure><img src="figures/example02.png" width="50%"></img><figcaption>3.1. Second version of the punchcard builder</figcaption></figure></p>
+<p>Circles have been replaced with boxes. Each box reflects the square root of a metric value and the minimum size is set to 5 pixels. The visualization is still limited. One cannot compare metrics across the different classes. Values have to be normalized for this. </p>
+<h3>4.  Data Normalization</h3>
+<p>The shape and colors of elements may be resized to reflect a particular property when compared with other elements. We call this <em>normalization</em>. 
+Consider the following improvement of <code>renderIn:</code>.</p>
+<p><figure><pre><code class="smalltalk">	renderIn: aView	
+		| el |
+		aView add: (RTLabel elementsOn: ' ').
+		objects do: [ :object | 
+			| objElement |
+			objElement := RTLabel elementOn: object.
+			aView add: objElement ].
+	
+		metrics do: [ :assoc |
+			aView add: (RTLabel elementOn: assoc key).
+			self resetCreatedElements.
+			objects do: [ :object |
+				| value |
+				value := assoc value rtValue: object.
+				el := self elementOn: value.
+				aView add: el ].
+			self normalizer elements: self createdElements. &quot;New line&quot;
+			self normalizer build &quot;New line&quot; ].		
+		RTCellLayout new 
+			lineItemsCount: objects size + 1;
+			on: aView elements</code></pre><figcaption></figcaption></figure></p>
+<p>The builder keeps track of the objects that are created thanks to the call <code>self elementOn: value</code>. Having the list of created objects is useful to configure the normalizer. In this case, we consider a line as the scope of the normalization.</p>
+<p>A more elaborated example is:</p>
+<p><figure><pre><code class="smalltalk">	b := RTPunchcard new.
+	b normalizer
+		normalizeSize;
+		normalizeColorUsing: { Color green . Color red }.
+
+	b addObject: RTPunchcard.
+	b addObject: RTPunchcard.
+	b addObject: RTBox.
+	b addObject: RTBuilder.
+	b addMetric: #numberOfMethods named: 'NOM'.
+	b addMetric: #numberOfVariables named: 'NOA'.
+	b addMetric: #numberOfLinesOfCode named: 'LOC'.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="example04"></a><figure><img src="figures/example04.png" width="50%"></img><figcaption>4.1. Third version of the punchcard builder</figcaption></figure></p>
+<p>Result of the example is given in Figure <a href="#example04">4.1</a>. Size and color reflect the metric value, which enable an easy comparison.</p>
+<h3>5.  Specifying interaction using RTInteractionBuilder</h3>
+<p>Often a visualization has to offer some interaction facilities to let the user get details or allow for a navigation. The builder class offers the method <code>setUpInteractionFor:</code> that lets the user specify interaction with the elements:</p>
+<p><figure><pre><code class="smalltalk">	renderIn: aView	
+		| el |
+		aView add: (RTLabel elementsOn: ' ').
+		objects do: [ :object | 
+			| objElement |
+			objElement := RTLabel elementOn: object.
+			self setUpInteractionFor: objElement. &quot;New line&quot;
+			aView add: objElement ].
+	
+		metrics do: [ :assoc |
+			aView add: (RTLabel elementOn: assoc key).
+			self resetCreatedElements.
+			objects do: [ :object |
+				| value |
+				value := assoc value rtValue: object.
+				el := self elementOn: value.
+				aView add: el ].
+			self normalizer elements: self createdElements.
+			self normalizer build ].		
+		RTCellLayout new 
+			lineItemsCount: objects size + 1;
+			on: aView elements</code></pre><figcaption></figcaption></figure></p>
+<p>Similarly to shapes and normalizer, a list of interactions may be set when defining a visualization, shown as follows:</p>
+<p><figure><pre><code class="smalltalk">	b := RTPunchcard new.
+	b interaction
+		popupText;
+		highlightColored: Color blue trans;
+		action: #browse.
+
+	b normalizer
+		normalizeSize;
+		normalizeColorUsing: { Color green . Color red }.
+
+	b addObject: RTPunchcard.
+	b addObject: RTBox.
+	b addObject: RTBuilder.
+	b addMetric: #numberOfMethods named: 'NOM'.
+	b addMetric: #numberOfVariables named: 'NOA'.
+	b addMetric: #numberOfLinesOfCode named: 'LOC'.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p>Right-clicking on the class name will open the menu to open a system browser on that class (<em>i.e.,</em> the result of sending <code>browse</code> to a class).</p>
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

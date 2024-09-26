@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Quick Start</h2>
+<p>This chapter gives an overview of what Roassal is up to. Many short code snippets are provided and briefly described. These snippets are directly copy-and-pastable within Roassal and typically each illustrates one particular aspect of the Roassal tooling. </p>
+
+<h3>1.  Basic Installation</h3>
+<h4>1.1.  From scratch (novice)</h4><p>Installing Roassal is relatively easy. It is just a matter of downloading a .zip file, available on <a href="http://AgileVisualization.com">http://AgileVisualization.com</a>. Unzip the file and execute MooseSuite to immediately start Roassal. Note that your filesystem will not be polluted: the application you have downloaded is all you need.</p>
+
+<h4>1.2.  Loading from Pharo (for advanced user)</h4><p>Pharo is a modern object-oriented programming language. If you are a Pharo programmer and want to integrate Roassal into your working developing environment, you may be interested in loading Roassal directly from its repository. </p>
+<p>Roassal is available within the Catalog browser, available from the Tools menu entry. In case of you need a Gofer script (if you wish to programmatically load Roassal or create a dependency within your application):</p>
+<p><figure><pre><code class="smalltalk">	Gofer it
+	    smalltalkhubUser: 'ObjectProfile' project: 'Roassal2';
+	    configurationOf: 'Roassal2';
+	    loadStable.</code></pre><figcaption></figcaption></figure></p>
+<p>Roassal is known to work on Pharo 4.0, 5.0, and 6.0.</p>
+
+<h4>1.3.  Linux Ubuntu Users</h4>
+<p>Roassal relies on Cairo to render visualization. While the Pharo virtual machine is shipped with the Cairo library for the Mac OSX and Windows platforms, linux users need to install it manually. This is easily done with the following incantation:
+<figure><pre><code class="smalltalk">	$ sudo apt-get install libcairo2:i386</code></pre><figcaption></figcaption></figure></p>
+<p>Note that you need administrator access grant the Cairo library installation. You will  need to manually install Cairo if you are using Ubuntu, Debian, or a fork such as Mint.</p>
+<h4>1.4.  Roassal on VisualWorks</h4>
+<p>Roassal is available on the public Cincom Store, under the bundle <code>roassal2-full</code>. Note that you need to have Cairo installed from your VisualWorks distribution. </p>
+
+<h3>2.  Running Roassal</h3>
+<p>Dragging-and-dropping the file <code>moose.image</code> on the virtual machine opens the Moose programming environment. Moose is a platform for data and software analysis. Roassal is the visualization engine part of Moose. Moose and Roassal are written in the Pharo programming language.</p>
+
+<h3>3.  First visualization</h3>
+<p>Most of the visualizations given in this book are written as a short script. A playground is a tool offered by Pharo to execute script. A playground may be open from the World menu (<em>i.e.,</em> the menu you get when you click outside a Pharo window):</p>
+<p><a name="quickStartMenu"></a><figure><img src="figures/quickStartMenu.png" width="30%"></img><figcaption>3.1. Opening the playground</figcaption></figure></p>
+
+<p>Open a playground and type the following (or copy if you are using an online version of the book):</p>
+<p><figure><pre><code class="smalltalk">	b := RTMondrian new.
+	b shape label.
+	b nodes: (1 to: 100).
+	b edges connectFrom: [ :i | i // 2 ].
+	b layout cluster.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="quickStartVisualization02"></a><figure><img src="figures/quickStartVisualization02.png" width="90%"></img><figcaption>3.2. Connecting numbers</figcaption></figure></p>
+<p>Press the <em>Do it all and go</em> button, represented with a green triangle, on the top right of the Playground window. Alternatively, select the whole content of the playground with Ctrl-A or Cmd-A and press Ctrl-G or Cmd-G. You should obtain Figure <a href="#quickStartVisualization02">3.2</a>.</p>
+<p>Mondrian is a high level code library for building expressive and flexible visualizations. After selecting the Mondrian library, the script selects the label shape. Nodes are then created, numbered from 1 to 100. Edges are built as follows: for each number <em>i</em> between 1 and 100, an edge is created from the element representing <code>i // 2</code> and <code>i</code>. The expression <code>a // b</code> returns the quotient between <code>a</code> and <code>b</code>,  <em>e.g.,</em> <code>9 // 4 = 2</code> and <code>3 // 2 = 1</code>.
+Nodes are then ordered as a cluster layout. Each element is draggable and has a popup with the mouse.</p>
+
+
+<h3>4.  Visualizing the file system</h3>
+<p>We will reuse the previous visualization to visualize a file system instead of arbitrary numbers. Pharo offers a large library to manipulate files and folders. Integrating files in a Roassal visualization is easy. Consider the following script:</p>
+<p><figure><pre><code class="smalltalk">	path := '/Users/alexandrebergel/Documents'.
+	allFilesUnderPath := path asFileReference allChildren.
+	b := RTMondrian new.
+	b shape circle
+	  color: Color gray trans;
+	  if: [ :aFile | aFile path basename endsWith: '.pdf' ] color: Color red trans.
+	b nodes: allFilesUnderPath.
+	b edges connectFrom: #parent.
+	b normalizer
+	  normalizeSize: #size min: 10 max: 150 using: #sqrt.
+	b layout cluster.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="quickStartVisualization01"></a><figure><img src="figures/quickStartVisualization01.png" width="60%"></img><figcaption>4.1. Visualizing a file system</figcaption></figure></p>
+<p>The variable <code>path</code> contains a location in your file system. You need to change the path to execute the script. Please note that indicating a large portion of the file system may significantly increase the computation time. The expression <code>path asFileReference</code> converts a string indicating a path as a file reference. <code>FileReference</code> is a Pharo class that represents a file reference, typically locally stored, on the hard disk. The message <code>allChildren</code> gets all the files recursively contained in the path. The visualization paints in red files for which their name ends with <code>.pdf</code>.</p>
+<p>Compared with the previous example, this visualization uses a normalizer to give a size to each circle according to the file size. The size varies from 10 to 150 pixels, and uses a square root (<code>sqrt</code>) transformation to cope with disparate size. You may want to click on the <em>camera center</em> icon button just above the visualization to scale it down.</p>
+<p>As a small exercise, you can replace <code>#sqrt</code> by <code>[:s | (s + 1) log * 2 ]</code>, for a logarithm scale, or <code>#yourself</code> for a linear scale.</p>
+<h3>5.  Geographical CSV data</h3><p>Comma-separated values (CSV) is a file format commonly manipulated by spreadsheet applications, such as Excel. Roassal has facilities to easily extract data from CSV files. The following example shows earthquakes over the last 30 days:</p>
+<p><figure><pre><code class="smalltalk">	tab := RTTabTable new input:  'http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.csv' asUrl retrieveContents  usingDelimiter: $,.
+	tab removeFirstRow.
+	tab replaceEmptyValuesWith: '0' inColumns: #(2 3 4 5).
+	tab convertColumnsAsFloat: #(2 3 4 5).
+
+	b := RTMapLocationBuilder new.
+	b shape circle
+		size: [ :m | 2 raisedTo: (m - 1) ];
+		color: (Color red alpha: 0.3).
+	tab values do: [ :row | b addPoint: row second @ row third value: row fifth ].
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="seisms"></a><figure><img src="figures/seisms.png" width="90%"></img><figcaption>5.1. Seismic activity the last 30 days</figcaption></figure>
+You should obtain a picture resembling Figure <a href="#seisms">5.1</a>.</p>
+<p>Sending the message <code>asUrl</code> to a string returns an instance of the class <code>Url</code>, describing urls. The content of the url is obtained by sending <code>retrieveContents</code>. For example, if you wish to know what <code>google.com</code> is made of, inspect the following expression: <code>'http://google.com' asUrl retrieveContents</code>.</p>
+<p>The data visualized in the previous example is from the US Earthquake Hazards Program (<a href="http://earthquake.usgs.gov/earthquakes/feed/v1.0/">http://earthquake.usgs.gov/earthquakes/feed/v1.0/</a>). The retrieved data looks like the following lines:
+<figure><pre><code class="smalltalk">'DateTime,Latitude,Longitude,Depth,Magnitude,MagType,NbStations,Gap,Distance,RMS,Source,EventID,Version
+2014-07-31T12:56:24.800+00:00,38.741,-122.714,1.2,0.9,Md,8,112,,0.04,nc,nc72268926,1406813044917
+2014-07-31T12:49:08.000+00:00,67.655,-162.002,15.5,3.5,ml,,,,0.65,ak,ak11344820,1406813786856
+2014-07-31T12:49:01.000+00:00,59.713,-142.589,99.9,1.4,ml,,,,5.95,ak,ak11344819,1406813766175'</code></pre><figcaption></figcaption></figure></p>
+<p>Making that bunch of data exploitable requires a number of conversions and manipulations. The class <code>RTTabTable</code> is made to convert and extract values from the data. We first remove the header (<code>'DataTime,Latitude,...'</code>). Empty values are converted with <code>'0'</code>. Portion of the data matching <code>',,'</code> is transformed into <code>',0,'</code>. Since the table is composed of string characters, we need to convert them as numerical floats. Column 2, 3, 4, and 5 are converted into float numbers (<em>i.e.,</em> decimal numbers, such as <code>4.5</code>). We create a <code>RTMapLocationBuilder</code>, which will be fed with the extracted values. We create a new shape, which is a transparent circle. The radius of each circle represents an earthquake of magnitude <em>m</em>, given by  2<sup>m - 1</sup>. This formula is rather arbitrary but it gives an intuitive output.</p>
+
+<h3>6.  Seism activity over time</h3><p>Timelines are useful abstractions to communicate evolution of particular properties or metrics over the time. Using the same example, the following script produces a time line of the earthquakes (Figure <a href="#timeline">6.1</a>):
+<figure><pre><code class="smalltalk">	tab := RTTabTable new 
+			input: 'http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.csv' asUrl retrieveContents 
+			usingDelimiter: $,.
+	tab removeFirstRow.
+	tab convertColumn: 1 to: [ :s | (DateAndTime fromString: s) julianDayNumber ].
+	tab convertColumnsAsFloat: #(5).
+
+	v := RTView new.
+	es := RTEllipse elementsOn: tab values.
+	v addAll: es. 
+	es @ RTPopup.
+
+	RTMetricNormalizer new
+		elements: es;
+		normalizeColor: #fifth using: { Color orange . Color red };
+		alphaColor: 0.3;
+		normalizeX: #first min: 0 max: 600;
+		normalizeSize: #fifth min: 0 max: 80 using: [ :mag | 2 raisedTo: (mag - 1) ].
+		
+	es @ (RTLabeled new text: [ :row | row fifth &gt; 6 ifTrue: [ row fifth ] ifFalse: [ '' ] ]).
+	v @ RTDraggableView.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="timeline"></a><figure><img src="figures/timeline.png" width="80%"></img><figcaption>6.1. Timeline of earthquakes</figcaption></figure></p>
+<p>The first column is converted into Julian day numbers. This is useful for ordering the earthquakes later on. The fifth column is then converted as a float. A circle is associated with each entry of the table. The size of each ellipse and its colors is deduced from the fifth column (earthquake magnitude). The first column, the Julian day number, is used to horizontally order the ellipse. Each earthquake with a magnitude greater than 6 has a title.</p>
+<p>The <strong>Julian Day Number</strong> (JDN) is the number of elapsed days since the beginning of a 7,980-years cycle. This number is frequently used by astronomer. The starting point for the first Julian cycle began on January 1, 4713 BC.</p>
+
+
+<h3>7.  Charting</h3><p>Roassal has a sophisticated mechanism to draw charts. <em>Grapher</em> takes as input a set of data points and a configuration (which may be minimal) to render these data points.</p>
+
+<h4>7.1.  Plotting </h4><p>The following example illustrates Ebola outbreaks (Figure <a href="#quickStartEbola">7.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	&quot;Preparing the data&quot;
+	tab := RTTabTable new input: 'http://agilevisualization.com/Ebola2.csv' asUrl retrieveContents usingDelimiter: $,.
+	tab removeFirstRow.
+	tab replaceEmptyValuesWith: '0' inColumns: #(10 11).
+	tab convertColumnsAsInteger: #(10 11).
+	tab convertColumnsAsDateAndTime: #(3 4).
+	data := tab values reversed.
+
+	&quot;Charting the data&quot;
+	b := RTGrapher new.
+
+	ds := RTData new.
+	ds interaction fixedPopupText: [ :row | row value at: 12 ]. 
+	ds dotShape ellipse 
+		color: (Color blue alpha: 0.3);
+		size: [ :row  | (row at: 11) / 5 ].
+	ds points: data.
+	ds connectColor: Color blue.
+	ds y: [ :r | r at: 10 ].
+	ds highlightIf: [ :row | (row at: 10) &gt; 100 ] using: [ :row | row third year ].
+	b add: ds. 
+
+	b axisX noLabel; numberOfTicks: tab values size.
+	b axisY noDecimal.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="quickStartEbola"></a><figure><img src="figures/ebola.png" width="70%"></img><figcaption>7.1. Ebola fatalities</figcaption></figure></p>
+<p>Figure <a href="#quickStartEbola">7.1</a> gives the output of the script. The Y-axis represents the number of fatalities. The X-axis is the sequential events. Note that time is not scaled in this chart, as the data are simply stacked from left to the right. The size of an event gives the rate of fatalities. Locating the mouse above an event gives some contextual information.</p>
+<p>The CSV data is obtained from a short bit.ly link we have set for the purpose of keeping the script short. The original data comes from the website <a href="http://mapstory.org">http://mapstory.org</a>.  MapStory is a website with short and illustrative stories. Outbreaks are contained in the file in a reverse chronological order, which is why we first reverse order it. Each point is a row in the table. The use of <code>fixedPopupText:</code> opens a popup for each data point when the mouse is above the data point. Column 12 of a row is a description of the outbreak. </p>
+<p>Each data point is a circle. Its size reflects the value of the column fatality rate (% of death per contamination). The column 10 indicates the number of fatalities. This value is used on the Y-axis. Only major events are labeled with the year (the third column corresponds to the year of the outbreak).</p>
+
+<h4>7.2.  Double charting</h4><p>Charter offers several visualization types. A double bar chart is an effective visual representation for small datasets and with two metrics to be represented.
+Consider the following example that illustrates the distribution of people in North American states (Figure <a href="#statePopulation">7.2</a>).</p>
+<p><figure><pre><code class="smalltalk">	tab := RTTabTable new input: 'http://bit.ly/CensusGov' asUrl retrieveContents usingDelimiter: $,.
+	tab removeFirstRow.
+	tab convertColumnsAsInteger: #('POPESTIMATE2013' 'POPEST18PLUS2013').
+
+	b := RTDoubleBarBuilder new.
+	b pointName: [ :row | row at: (tab indexOfName: 'NAME') ].
+	&quot;Remove the first line, the sum&quot;
+	b points: tab values allButFirst. 
+	b bottomValue: [ :row | ((row at: (tab indexOfName: 'POPESTIMATE2013')) / 1000) asInteger ] 
+		titled: 'Pop estimate (x 1000)'.
+	b topValue: [ :row | ((row at: (tab indexOfName: 'POPEST18PLUS2013')) / 1000) asInteger] 
+		titled: 'Pop +18 estimate (x 1000)'.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="statePopulation"></a><figure><img src="figures/statePopulation.png" width="80%"></img><figcaption>7.2. Population per state in the USA</figcaption></figure></p>
+<p>Data are obtained from <a href="http://census.gov">http://census.gov</a>, a wonderful source of social data. Some columns are converted as numerical integers. Rows are then provided to the builder <code>b</code>. The first line is removed since it contains the value for the whole United States, which would distort the visualization. </p>
+<h4>7.3.  Multiple graphs</h4><p>Several graphs may be represented simultaneously. Consider the following example (Figure <a href="#multipleGraphs">7.3</a>):
+<figure><pre><code class="smalltalk">	b := RTGrapher new.
+	numberOfDataSets := 5.
+
+	colorNormalizer := RTMultiLinearColorForIdentity new 
+						objects: (1 to: numberOfDataSets).
+	1 to: numberOfDataSets do: [ :i |
+		ds := RTData new.
+		ds noDot.
+		ds points: ((1 to: 500) collect: [ :ii | 50 atRandom - 25 ]) cumsum.
+		ds connectColor: (colorNormalizer rtValue: i).
+		b add: ds.
+	].
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="multipleGraphs"></a><figure><img src="figures/multipleGraphs.png" width="80%"></img><figcaption>7.3. Multiple graphs</figcaption></figure></p>
+<p>The variable <code>numberOfDataSets</code> indicates the amount of data points we randomly generate. The variable <code>colorNormalizer</code> points with a color normalizer. The job of a color normalizer is to associate an object to a color. In this case, objects are numbers, ranging to 1 to <code>numberOfDataSets</code>. The default color palette is used.</p>
+<p>Data points are obtained by summing random values from 1 to 500 and using a cumulative sum. We remove the dots (using <code>noDot</code>) to solely  have line curves.</p>
+
+
+<h3>8.  Timeline</h3>
+<p>Timelines are essential when representing process executions. A Gantt chart is commonly employed to represent project development and implementation. Consider the following script (Figure <a href="#ganttChart">8.1</a>):
+<figure><pre><code class="smalltalk">	data := #(
+		#(WP1 0 4)  #(WP2 4 8)
+		#(WP3 8 12) #(WP4 3 4) 
+		#(WP4 7 9) #(WP4 10 12)   
+	  ).
+	b := RTTimeline new.
+	s := RTTimelineSet new.
+	s objects: data.
+	s lineIdentifier: #first.
+	s start: #second.
+	s end: #third.
+	b add: s.
+	b axisX
+		noDecimal;
+		title: 'Month';
+		numberOfLabels: 12.
+	b</code></pre><figcaption></figcaption></figure></p>
+<p><a name="ganttChart"></a><figure><img src="figures/ganttChart.png" width="60%"></img><figcaption>8.1. Gantt chart</figcaption></figure></p>
+
+<p>Objects that will be represented are given by the variable <code>data</code>. Each object is represented as an array of 3 elements, for example <code>#(WP1 0 4)</code>. The name of an event is given by the first element of the array. The beginning of an object is given by the second element of the array and the event end by the third position. There is no need to have decimal values on the X-axis since only integer values are considered here.</p>
+
+
+<h3>9.  Integration with OpenStreetMap</h3>
+<p>OpenStreetMap is a collaborative project to create maps (<a href="http://openstreetmap.org">http://openstreetmap.org</a>). One of the advantage of OpenStreetMap is that it offers an API to access and download map tiles. </p>
+<p>Consider the following example that associate bar charts to some geographical location (Figure <a href="#openStreetMap">9.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	v := RTView new.
+	v @ RTDraggableView.
+	map := RTOSM new.
+	v add: map element.
+
+	&quot;City geographical positions obtained from Wikipedia&quot;
+	paris := 48.8567 @ 2.3508.
+	newyork := 40.7127 @ -74.0059.
+	london := 51.507222@ -0.1275.
+	
+	&quot;Some arbitrary data&quot;
+	data := 
+		{ { paris . #(10 5 10 3 10 6 8) } .
+			{ london . #(5 3 3 -5 ) } .
+			{ newyork . #(5 -2 10 15 -10) } }.
+	
+	data do: [ :tupple |
+			| grapher dataSet |
+			grapher := RTGrapher new.
+			grapher extent: 150 @ 100.
+			dataSet := RTData new.
+			dataSet points: tupple second.
+			dataSet barShape width: 10; color: Color red.
+			grapher add: dataSet.
+			grapher build.
+
+			barElements := grapher view elements.
+			v addAll: barElements.
+			barElements translateTo: (map latLonToRoassal: tupple first) ].
+	
+	v canvas camera translateTo: (map latLonToRoassal: paris).
+	v canvas camera noInitializationWhenOpen.
+	v canvas camera scale: 0.3.
+	v</code></pre><figcaption></figcaption></figure></p>
+<p><a name="openStreetMap"></a><figure><img src="figures/OSM.png" width="60%"></img><figcaption>9.1. OpenStreetMap integration</figcaption></figure></p>
+<p>After a basic initialization, data are plotted as a bar chart on top of the tiles. Zooming in and out apply on both the map and the graph. The view initially focuses on Paris, when opened.</p>
+<p>Roassal supports a wide range of charts. Another example is (Figure <a href="#quickstartOpenStreeMap02">9.2</a>):
+<figure><pre><code class="smalltalk">	v := RTView new.
+	v @ RTDraggableView.
+	map := RTOSM new.
+	v add: map element.
+
+	&quot;Place to set the data and center the camera&quot;
+	london := 51.507222@ -0.1275.
+    
+	&quot;Some arbitrary data&quot;
+	data := ((1 to: 500) collect: [ :i | 50 atRandom - 25 ]) cumsum.
+
+	&quot;We build the graph&quot;
+	b := RTGrapher new.
+	b extent: 100@30.
+	d := RTData new.
+	d noDot.
+	d connectColor: Color red.
+	d points: data.
+
+	b add: d.
+	b axisY 
+		labelFontHeight: 6;
+		color: Color red; 
+	    title: 'Sale'.
+
+	b axisX color: Color red; noTick; title: 'country'.
+	b build.
+	elementsAndEdges := b view elements, b view edges.
+
+	&quot;We create a white background&quot;
+	whiteBackground := (RTRoundedBox new color: Color white trans; borderRadius: 10) element.
+	v add: whiteBackground.
+	v addAll: elementsAndEdges.
+	RTNest new on: whiteBackground nest: elementsAndEdges.
+	whiteBackground translateTo: (map latLonToRoassal: london).
+
+	v canvas camera translateTo: (map latLonToRoassal: london).
+	v canvas camera noInitializationWhenOpen.
+	v canvas camera scale: 1.5.
+	v</code></pre><figcaption></figcaption></figure>
+<a name="quickstartOpenStreeMap02"></a><figure><img src="figures/quickstartOpenStreeMap02.png" width="60%"></img><figcaption>9.2. Charting on top of London</figcaption></figure></p>
+
+<h3>10.  More examples</h3>
+<p>Many examples are available within the Roassal distribution. The Roassal example browser is available from the World menu. Over 1,000 examples are available (Figure <a href="#quickStartExampleBrowser">10.1</a>).</p>
+<p><a name="quickStartExampleBrowser"></a><figure><img src="figures/quickStartExampleBrowser.png" width="85%"></img><figcaption>10.1. Example browser</figcaption></figure></p>
+
+<p>Most of the examples given above use a dedicated builder. Builders are a high level abstract on top of the Roassal low-level API. Part I of the book focuses on the core of Roassal, and covers this low-level API. Part II of the book details the builder mechanism. Part III presents some large applications of Roassal.</p>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

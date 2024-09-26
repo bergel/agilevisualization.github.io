@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Preface</h2>
+<p>This book is about programming visual and interactive data representation. 
+Readers are expected to have some programming experience. </p>
+<p>Computers are traditionally considered as an extension of the human brain: a computer alleviates humans from performing boring and repetitive tasks. 
+Data visualization is a wonderful area in which computer nicely complement what the brain excels at. </p>
+<p>Challenges in data visualization is actually not visualizing data. There are numerous libraries for that purpose. The real challenge is about making visualization that are easily reusable, composable and extensible. How many times have you seen an appealing and sexy visualization on the web that you wish to reuse it with your own data? This book aims at answering that question.</p>
+<p>This book is based on the Roassal visualization engine. All the examples are therefore made for Roassal, and are written in the Pharo programming language.</p>
+<p>The book is made for a large audience. 
+Designing a documentation that find the right balance between what roassal offers, how people want to use it, and considering the previous knowledge people may have is difficult. </p>
+
+
+
+
+
+<h3>1.  The Roassal community</h3>
+<p>As for most successfull open source project, Roassal is driven by an community effort. The community behind Pharo is active. The positive aspect of this is that Roassal is evolving every single day (literally). The negative aspect is that most documentation become obsolete as soon as published. </p>
+<p>The book has been written in such a way that deep technical aspects are not discussed while general concepts are more likely to be stable over time. </p>
+<p>In case you wish to discuss some aspect of Roassal or simply need help, there is a number of way to get in touch with us:</p><ul><li> <code>http://moosetechnology.org</code> is the website of the Moose analysis platform. Details about how to join the Moose-Dev mailing list are provided. The community is friendly, open-minded, and happy to help. </li><li> <code>hello@objectprofile.com</code> is directed to some principal developers of Roassal. </li></ul>
+<p>The Roassal team is also available from the channel <code>#Roassal</code> on the Slack messaging. Information on joining the channel is available on <code>http://pharo.org/community</code>.</p>
+
+<h3>2.  Other visualization platforms </h3><p>Although Roassal, Pharo, and Moose are heavily promoted in this book, our goal is not to make you switch language or visualization API. You probably have a good reason for using what you are currently using. In case you are seeking for a fresh experience for visualizing and programming, then we cannot recommend more this tool trilogy.</p>
+<p>Many visualization engines are around. D3js, RaphaelJS, Processing, Flare are popular visualization frameworks supported by a large community. Agile Visualization presents a compelling use of visualizations in many different situations. Feel free to pick and develop ideas presented in this book for your favorite visualization engine. We believe that Agile Visualization will enhance your creativity.</p>
+
+<h3>3.  If you do not know Pharo</h3><p>Pharo is easy to learn and to use. It comes with fantastic programming tools to make you intimely interact with <em>objects</em>, an object being an elementary computational unit. </p>
+<p>Our advice is to resist the natural tendency to map your knowledge from Java or PHP into Pharo. You will miss the beauty of the thing. You would not enter a French restaurant and order a cheeseburger. Don't you?</p>
+<h3>4.  If you are already a Pharo/Smalltalk programmer</h3>
+<p>If you are a Pharo programmer with the knowledge of some graphical API, then here our advice: You may want to try to work with the core of Roassal. Just focus on Part I of this book. The related code is everything contains within the <code>Roassal2-Core</code> package. Just look at the <em>Roassal Example</em> in the example browser, within Pharo. Play a bit with the concepts belong to Roassal core. Once you understand the basic functionalities of Roassal, we invite you to read more about the builder infrastructure. Builder enables fantastic scripting and visualization composition not seen anywhere else!</p>
+<p>One last advice before beginning your journey: do no try to build any complex visualization in Roassal without having read the builder infrastructure. Builders may ease your life!</p>
+
+
+
+<h3>5.  Similar books</h3><ul><li> <em>Interactive Data Visualization for the Web</em> by Scott Murray, 2013, is about the D3 library. The book is essentially about programming interactive visualization using D3. A free version of the book is available on  <a href="http://chimera.labs.oreilly.com/books/1230000000345/index.html">http://chimera.labs.oreilly.com/books/1230000000345/index.html</a></li></ul>
+
+
+
+<h3>6.  Acknowledgements</h3><p>The book is the result of multiple and long-lasting collaborations. </p>
+<p>First of all, our greatings go to the Lam Research company. Lam's team has always been supportive both morally and financially. Thanks CH and Chris! You have made this book a reality.</p>
+<p>Many people within the Moose, Pharo and ESUG communities have deeply contributed to what is presented in the book. Your enthusiastic support and trust in what we have done has always been invaluable. </p>
+
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>

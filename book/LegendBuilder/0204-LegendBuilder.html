@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Agile Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Highlight js -->
+    <link rel="stylesheet" href="../_support/html/highlightjs/styles/default.css">
+    <link rel="stylesheet" href="../_support/html/css/highlight-commands.css">
+    <script src="../_support/html/highlightjs/highlight.pack.js"></script>
+    <script src="../_support/html/js/highlight-commands.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="../_support/html/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../_support/html/css/bootstrap-theme.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 55em; }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-53222112-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    <div class="container text-justify">
+      <h2> Documenting with a Legend</h2>
+<p>A legend is essential as soon as non-trivial data is visualized. Unless a visualization is frequently used or highly intuitive, a legend is necessary to guide the user with all the different visual cues. <code>RTLegendBuilder</code> is the main class to build legends. It offers facilities that are both easy to use and flexible enough to accomodate most of the need.</p>
+<p>A legend is created with the following steps:</p><ol><li> Create an instance of the class <code>RTLegendBuilder</code></li><li> A view has to be provided to the legend builder. The legend will be added to that view.</li><li> The legend is defined using the multiple utility functions (<em>e.g.,</em> <code>addText:</code>, <code>addColor:text:</code>)</li><li> A position may be optionally provided (<em>e.g.,</em> <code>below</code>, <code>above</code>, <code>onDemand</code>). </li><li> The message <code>build</code> has to be sent to the builder</li></ol>
+<h3>1.  A first example</h3>
+<p>As a first example, consider the following code snippet that simply visualizes some classes. The visualization uses a color to indicate a particular threshold on the color of each class. The size of a class reflects the number of methods of the class, and if the number of lines of code of the class  is below 1,000 then the class is green, otherwise it is red (Figure <a href="#legendExample01">1.1</a>):</p>
+<p><figure><pre><code class="smalltalk">	&quot;The view will be passed to the RTLegendBuilder&quot;
+	v := RTView new.
+	es := RTBox new
+		size: #numberOfMethods;
+		color: [ :cls | 
+			cls numberOfLinesOfCode &lt;= 1000
+				ifTrue: [ Color green ]
+				ifFalse: [ Color red ] ];
+		elementsOn: Collection withAllSubclasses.
+	v addAll: es.
+	RTFlowLayout on: es.
+
+	&quot;We add a legend&quot;
+	lb := RTLegendBuilder new.
+	lb onDemand.
+	lb view: v.
+	lb addText: 'Each box is a class, belonging to the Collection class hierarchy'.
+	lb addColor: Color green text: 'Class with less than 1000 lines of code'.
+	lb addColor: Color red text: 'Class with more than 1000 lines of code'.
+	lb build.
+	
+	v</code></pre><figcaption></figcaption></figure></p>
+
+<p><a name="legendExample01"></a><figure><img src="figures/legendExample01.png" width="40%"></img><figcaption>1.1. Simple use of a legend</figcaption></figure></p>
+<p>The first code given above creates a small visualization and adds a legend to it. 
+The legend is available on-demand, meaning that the user has to locate the mouse cursor above the <code>?</code> character, located on the top-left corner of the visualization. The view, referenced by the variable <code>v</code>, has to be passed to the legend builder. The legend then has to be configured. The message <code>addText:</code> provides a descriptive text of the legend and <code>addColor:text:</code> is used to give a meaning to a color. The message <code>build</code> adds the legend in the view <code>v</code>.</p>
+<h3>2.  Building a legend</h3>
+<p>The class <code>RTLegendBuilder</code> offers many utility methods to build expressive legends. In particular:</p><ul><li> <code>addText:</code> adds a text to the legend</li><li> <code>addColor: aColor text: aText</code> provides a textual description of a color</li><li> <code>addColorFadingFrom: startColor to: endColor text: textualDescription</code> useful for describing a color fading ranging from <code>startColor</code> to <code>endColor</code></li><li> <code>addColorFadingUsing: colors text: textualDescription</code>  describes a fading based on the provided set of colors.</li><li> <code>addLineColor: aColor text: aText</code> associates a text to a colored line</li><li> <code>addRectanglePolymetricWidth: widthDescription height: heightDescription box: boxDescription</code> associates a description to the height, width, and the color of a box</li></ul>
+<h3>3.  Documenting a polymetric shape</h3>
+<p>Clearly indicating the meaning of the different visual dimensions is highly important to make the visualization accessible. The following example adds a legend to a simple visualization of some classes (Figure <a href="#legendExample02">3.1</a>):
+<figure><pre><code class="smalltalk">	b := RTMondrian new.
+	
+	b nodes: Collection withAllSubclasses.
+	b edges moveBehind; connectFrom: #superclass.
+	b layout cluster.
+	b normalizer 
+		normalizeColor: #numberOfLinesOfCode;
+		normalizeWidth: [ :cls | cls numberOfInstanceVariables * 5 ];
+		normalizeHeight: #numberOfMethods.
+	b build.
+
+	lb := RTLegendBuilder new.
+	lb view: b view.
+	lb addRectanglePolymetricWidth: 'number of instance variables' height: 'number of methods' box: ''.
+	lb addColorFadingFrom: Color gray to: Color red text: 'Number of lines of code'.
+	lb addLineColor: Color gray text: 'superclass relation'.
+	lb build.
+
+	b view</code></pre><figcaption></figcaption></figure>
+<a name="legendExample02"></a><figure><img src="figures/legendExample02.png" width="60%"></img><figcaption>3.1. Documenting a polymetric shape</figcaption></figure></p>
+<p>A description of each metric is provided using the message <code>addRectanglePolymetricWidth:height:box: </code>.</p>
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../_support/html/js/bootstrap.min.js"></script>
+
+    <!-- Syntax highlighting of code blocks -->
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+</html>
